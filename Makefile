@@ -9,8 +9,11 @@ help: ## Show list of available Make commands
 	@echo "======================================================================"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-dev: ## Run development environment in detached mode (Docker Compose)
+dev-d: ## Run development environment in detached mode (Docker Compose)
 	docker compose -f $(COMPOSE_DEV) up -d --build
+
+dev: ## Run development environment in detached mode (Docker Compose)
+	docker compose -f $(COMPOSE_DEV) up --build
 
 up-dev: dev ## Alias for dev
 

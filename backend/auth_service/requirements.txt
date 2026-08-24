@@ -6,6 +6,6 @@ asyncpg
 aiosqlite
 pydantic
 pydantic-settings
+email-validator
 pyjwt
-passlib[bcrypt]
-bcrypt
+passlib

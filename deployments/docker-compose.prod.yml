@@ -11,7 +11,7 @@ volumes:
 services:
   # Internal Database - No host port exposure
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17.5-alpine3.22
     container_name: microshop-prod-postgres
     restart: always
     environment:
@@ -23,14 +23,14 @@ services:
     networks:
       - microshop-prod-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prod_user} -d ${POSTGRES_DB:-microshop_prod}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prod_user} -d ${POSTGRES_DB:-microshop_prod}" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   # Internal Cache - No host port exposure
   redis:
-    image: redis:7-alpine
+    image: redis:8.4-alpine
     container_name: microshop-prod-redis
     restart: always
     volumes:
@@ -38,7 +38,7 @@ services:
     networks:
       - microshop-prod-net
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
