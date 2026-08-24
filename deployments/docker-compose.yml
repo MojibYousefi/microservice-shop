@@ -3,12 +3,14 @@ version: "3.8"
 networks:
   microshop-net:
     driver: bridge
+    internal: false  # Allows gateway to communicate externally while keeping internal services isolated
 
 volumes:
   postgres_data:
   redis_data:
 
 services:
+  # Internal Database - No host port exposure
   postgres:
     image: postgres:16-alpine
     container_name: microshop-postgres
@@ -17,8 +19,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-micro_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-micro_pass}
       POSTGRES_DB: ${POSTGRES_DB:-microshop_db}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -29,12 +29,11 @@ services:
       timeout: 5s
       retries: 5
 
+  # Internal Cache - No host port exposure
   redis:
     image: redis:7-alpine
     container_name: microshop-redis
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -45,9 +44,10 @@ services:
       timeout: 5s
       retries: 5
 
+  # Internal Auth Microservice - No host port exposure
   auth-service:
     build:
-      context: .
+      context: ..
       dockerfile: backend/auth_service/Dockerfile
     container_name: microshop-auth-service
     restart: always
@@ -64,9 +64,10 @@ services:
     networks:
       - microshop-net
 
+  # Public API Gateway - ONLY service exposing port 8000 to the outside world
   gateway:
     build:
-      context: .
+      context: ..
       dockerfile: backend/gateway/Dockerfile
     container_name: microshop-gateway
     restart: always
