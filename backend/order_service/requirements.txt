@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+sqlalchemy
+asyncpg
+aiosqlite
+redis
+pydantic
+pydantic-settings
+pyjwt
