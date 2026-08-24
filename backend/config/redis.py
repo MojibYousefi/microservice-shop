@@ -1,6 +1,6 @@
 import redis.asyncio as aioredis
 from typing import AsyncGenerator
-from backend.shared.config import settings
+from backend.config.config import settings
 
 # Global async redis connection pool
 redis_client: aioredis.Redis = aioredis.from_url(

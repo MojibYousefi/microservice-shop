@@ -1,9 +1,0 @@
-fastapi
-uvicorn[standard]
-sqlmodel
-sqlalchemy
-asyncpg
-aiosqlite
-pydantic
-pydantic-settings
-pyjwt

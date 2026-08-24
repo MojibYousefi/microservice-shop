@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 # Ensure backend root is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from backend.shared.config import settings
+from backend.config.config import settings
 
 # Global async HTTP client for proxying requests
 http_client: httpx.AsyncClient = None
@@ -29,7 +29,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for browser frontend
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -47,8 +47,6 @@ async def gateway_health():
     services_status = {}
     service_map = {
         "auth_service": settings.AUTH_SERVICE_URL,
-        "product_service": settings.PRODUCT_SERVICE_URL,
-        "order_service": settings.ORDER_SERVICE_URL,
     }
 
     for service_name, service_url in service_map.items():
@@ -115,44 +113,9 @@ async def route_auth(request: Request, path: str):
     return await forward_request(request, settings.AUTH_SERVICE_URL)
 
 
-@app.api_route("/api/v1/products/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
-async def route_products(request: Request, path: str):
-    return await forward_request(request, settings.PRODUCT_SERVICE_URL)
-
-
-@app.api_route("/api/v1/products", methods=["GET", "POST", "OPTIONS"])
-async def route_products_root(request: Request):
-    return await forward_request(request, settings.PRODUCT_SERVICE_URL)
-
-
-@app.api_route("/api/v1/categories/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
-async def route_categories(request: Request, path: str):
-    return await forward_request(request, settings.PRODUCT_SERVICE_URL)
-
-
-@app.api_route("/api/v1/categories", methods=["GET", "POST", "OPTIONS"])
-async def route_categories_root(request: Request):
-    return await forward_request(request, settings.PRODUCT_SERVICE_URL)
-
-
-@app.api_route("/api/v1/cart/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
-async def route_cart(request: Request, path: str):
-    return await forward_request(request, settings.ORDER_SERVICE_URL)
-
-
-@app.api_route("/api/v1/cart", methods=["GET", "POST", "DELETE", "OPTIONS"])
-async def route_cart_root(request: Request):
-    return await forward_request(request, settings.ORDER_SERVICE_URL)
-
-
-@app.api_route("/api/v1/orders/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
-async def route_orders(request: Request, path: str):
-    return await forward_request(request, settings.ORDER_SERVICE_URL)
-
-
-@app.api_route("/api/v1/orders", methods=["GET", "POST", "OPTIONS"])
-async def route_orders_root(request: Request):
-    return await forward_request(request, settings.ORDER_SERVICE_URL)
+@app.api_route("/api/v1/auth", methods=["GET", "POST", "OPTIONS"])
+async def route_auth_root(request: Request):
+    return await forward_request(request, settings.AUTH_SERVICE_URL)
 
 
 # Mount frontend static directory if exists

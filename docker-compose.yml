@@ -64,44 +64,6 @@ services:
     networks:
       - microshop-net
 
-  product-service:
-    build:
-      context: .
-      dockerfile: backend/product_service/Dockerfile
-    container_name: microshop-product-service
-    restart: always
-    environment:
-      - DEBUG=${DEBUG:-True}
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - microshop-net
-
-  order-service:
-    build:
-      context: .
-      dockerfile: backend/order_service/Dockerfile
-    container_name: microshop-order-service
-    restart: always
-    environment:
-      - DEBUG=${DEBUG:-True}
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - microshop-net
-
   gateway:
     build:
       context: .
@@ -113,22 +75,7 @@ services:
     environment:
       - DEBUG=${DEBUG:-True}
       - AUTH_SERVICE_URL=http://auth-service:8001
-      - PRODUCT_SERVICE_URL=http://product-service:8002
-      - ORDER_SERVICE_URL=http://order-service:8003
     depends_on:
       - auth-service
-      - product-service
-      - order-service
-    networks:
-      - microshop-net
-
-  frontend:
-    image: nginx:alpine
-    container_name: microshop-frontend
-    restart: always
-    ports:
-      - "3000:80"
-    volumes:
-      - ./frontend:/usr/share/nginx/html:ro
     networks:
       - microshop-net
