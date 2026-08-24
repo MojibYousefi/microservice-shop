@@ -9,6 +9,7 @@ volumes:
   redis_prod_data:
 
 services:
+  # Internal Database - No host port exposure
   postgres:
     image: postgres:16-alpine
     container_name: microshop-prod-postgres
@@ -27,6 +28,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # Internal Cache - No host port exposure
   redis:
     image: redis:7-alpine
     container_name: microshop-prod-redis
@@ -41,9 +43,10 @@ services:
       timeout: 5s
       retries: 5
 
+  # Internal Auth Microservice - No host port exposure
   auth-service:
     build:
-      context: .
+      context: ..
       dockerfile: backend/auth_service/Dockerfile
     container_name: microshop-prod-auth
     restart: always
@@ -60,9 +63,10 @@ services:
     networks:
       - microshop-prod-net
 
+  # Public API Gateway - ONLY entrypoint exposing port 8000
   gateway:
     build:
-      context: .
+      context: ..
       dockerfile: backend/gateway/Dockerfile
     container_name: microshop-prod-gateway
     restart: always
