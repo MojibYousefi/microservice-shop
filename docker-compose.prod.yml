@@ -1,0 +1,130 @@
+version: "3.8"
+
+networks:
+  microshop-prod-net:
+    driver: bridge
+
+volumes:
+  postgres_prod_data:
+  redis_prod_data:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: microshop-prod-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-prod_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prod_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-microshop_prod}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - microshop-prod-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prod_user} -d ${POSTGRES_DB:-microshop_prod}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: microshop-prod-redis
+    restart: always
+    volumes:
+      - redis_prod_data:/data
+    networks:
+      - microshop-prod-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: backend/auth_service/Dockerfile
+    container_name: microshop-prod-auth
+    restart: always
+    environment:
+      - DEBUG=False
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-prod_user}:${POSTGRES_PASSWORD:-prod_secure_password}@postgres:5432/${POSTGRES_DB:-microshop_prod}
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-prod-super-secret-key-32-chars-minimum}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microshop-prod-net
+
+  product-service:
+    build:
+      context: .
+      dockerfile: backend/product_service/Dockerfile
+    container_name: microshop-prod-product
+    restart: always
+    environment:
+      - DEBUG=False
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-prod_user}:${POSTGRES_PASSWORD:-prod_secure_password}@postgres:5432/${POSTGRES_DB:-microshop_prod}
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-prod-super-secret-key-32-chars-minimum}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microshop-prod-net
+
+  order-service:
+    build:
+      context: .
+      dockerfile: backend/order_service/Dockerfile
+    container_name: microshop-prod-order
+    restart: always
+    environment:
+      - DEBUG=False
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-prod_user}:${POSTGRES_PASSWORD:-prod_secure_password}@postgres:5432/${POSTGRES_DB:-microshop_prod}
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-prod-super-secret-key-32-chars-minimum}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microshop-prod-net
+
+  gateway:
+    build:
+      context: .
+      dockerfile: backend/gateway/Dockerfile
+    container_name: microshop-prod-gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - PRODUCT_SERVICE_URL=http://product-service:8002
+      - ORDER_SERVICE_URL=http://order-service:8003
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - microshop-prod-net
+
+  frontend:
+    image: nginx:alpine
+    container_name: microshop-prod-frontend
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    networks:
+      - microshop-prod-net
