@@ -3,7 +3,7 @@ version: "3.8"
 networks:
   microshop-net:
     driver: bridge
-    internal: false  # Allows gateway to communicate externally while keeping internal services isolated
+    internal: false # Allows gateway to communicate externally while keeping internal services isolated
 
 volumes:
   postgres_data:
@@ -12,7 +12,7 @@ volumes:
 services:
   # Internal Database - No host port exposure
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17.5-alpine3.22
     container_name: microshop-postgres
     restart: always
     environment:
@@ -24,14 +24,14 @@ services:
     networks:
       - microshop-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-micro_user} -d ${POSTGRES_DB:-microshop_db}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-micro_user} -d ${POSTGRES_DB:-microshop_db}" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   # Internal Cache - No host port exposure
   redis:
-    image: redis:7-alpine
+    image: redis:8.4-alpine
     container_name: microshop-redis
     restart: always
     volumes:
@@ -39,7 +39,7 @@ services:
     networks:
       - microshop-net
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
