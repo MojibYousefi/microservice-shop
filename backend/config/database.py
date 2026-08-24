@@ -2,7 +2,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-from backend.shared.config import settings
+from backend.config.config import settings
 
 # Ensure SQLite engine connects properly with async driver and check_same_thread=False
 engine_kwargs = {"echo": settings.DEBUG}

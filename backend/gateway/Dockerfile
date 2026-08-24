@@ -9,7 +9,7 @@ ENV PYTHONPATH=/app
 COPY backend/gateway/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY backend/shared /app/backend/shared
+COPY backend/config /app/backend/config
 COPY backend/gateway /app/backend/gateway
 COPY frontend /app/frontend
 

@@ -16,7 +16,7 @@ COPY backend/auth_service/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy shared modules and auth service code
-COPY backend/shared /app/backend/shared
+COPY backend/config /app/backend/config
 COPY backend/auth_service /app/backend/auth_service
 
 EXPOSE 8001

@@ -4,9 +4,9 @@ import jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, Security, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from backend.shared.config import settings
+from backend.config.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security_bearer = HTTPBearer(auto_error=False)
 
 
