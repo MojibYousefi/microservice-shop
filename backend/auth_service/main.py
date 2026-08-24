@@ -57,7 +57,7 @@ async def register(
     db_user = User(
         email=user_in.email,
         username=user_in.username,
-        hashed_password=hash_password(user_in.password),
+        password=hash_password(user_in.password),
         full_name=user_in.full_name,
         is_admin=user_in.is_admin
     )
@@ -79,7 +79,7 @@ async def login(
     res = await db.exec(stmt)
     user = res.first()
 
-    if not user or not verify_password(credentials.password, user.hashed_password):
+    if not user or not verify_password(credentials.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username/email or password."
