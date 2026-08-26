@@ -26,3 +26,5 @@ env/
 
 # Docker
 docker-data/
+
+node_modules/
