@@ -194,9 +194,9 @@
 
   border-radius: 12px;
 
-  background: linear-gradient(135deg, #d53e0f, #9b0f06);
+  background: var(--base-text);
 
-  color: var(--base-text);
+  color: var(--bg-base);
 
   font-family: inherit;
 
