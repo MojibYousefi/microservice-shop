@@ -1,0 +1,222 @@
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar {
+  position: absolute;
+  top: 25px;
+  left: 0;
+
+  width: 100%;
+
+  z-index: 1000;
+
+  padding: 0 40px;
+
+  box-sizing: border-box;
+}
+
+/* =========================
+   CONTAINER
+========================= */
+
+.navbar-container {
+  width: 100%;
+  max-width: 1200px;
+
+  height: 64px;
+
+  margin: 0 auto;
+
+  padding: 0 20px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: var(--bg-base);
+
+  border: 1px solid rgba(238, 217, 185, 0.18);
+
+  border-radius: 18px;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* =========================
+   LOGO
+========================= */
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: var(--base-text);
+
+  min-width: 160px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(238, 217, 185, 0.6);
+
+  border-radius: 50%;
+
+  font-size: 22px;
+
+  color: #eed9b9;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+
+  line-height: 1;
+
+  font-family: Georgia, serif;
+
+  font-size: 13px;
+
+  letter-spacing: 0.5px;
+}
+
+.logo-text span:first-child {
+  font-size: 14px;
+}
+
+.logo-text span:last-child {
+  font-size: 11px;
+
+  margin-top: 3px;
+
+  opacity: 0.9;
+}
+
+/* =========================
+   MENU
+========================= */
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+
+  gap: 28px;
+}
+
+.navbar-menu a {
+  position: relative;
+
+  color: var(--base-text);
+
+  text-decoration: none;
+
+  font-size: 13px;
+
+  transition: color 0.3s ease;
+}
+
+.navbar-menu a::after {
+  content: "";
+
+  position: absolute;
+
+  right: 0;
+  bottom: -7px;
+
+  width: 0;
+  height: 1px;
+
+  background: #d53e0f;
+
+  transition: width 0.3s ease;
+}
+
+.navbar-menu a:hover {
+  color: var(--base-text);
+}
+
+.navbar-menu a:hover::after {
+  width: 100%;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 20px;
+
+  min-width: 160px;
+
+  justify-content: flex-end;
+}
+
+.signin {
+  color: var(--base-text);
+
+  text-decoration: none;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 12px;
+
+  transition: 0.3s;
+}
+
+.signin:hover {
+  color: var(--base-text);
+}
+
+/* =========================
+   START BUTTON
+========================= */
+
+.start-btn {
+  border: none;
+
+  padding: 11px 20px;
+
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, #d53e0f, #9b0f06);
+
+  color: var(--base-text);
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 20px rgba(213, 62, 15, 0.35);
+}
+
+.start-btn:active {
+  transform: translateY(0);
+}
