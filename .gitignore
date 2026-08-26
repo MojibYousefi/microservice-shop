@@ -27,4 +27,11 @@ env/
 # Docker
 docker-data/
 
+<<<<<<< HEAD
 node_modules/
+=======
+
+
+node_modules/
+
+>>>>>>> frontend
