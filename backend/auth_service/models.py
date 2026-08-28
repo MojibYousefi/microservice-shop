@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlmodel import SQLModel, Field
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 # ==========================================
@@ -32,12 +32,14 @@ class UserCreate(BaseModel):
 
 
 class UserRead(BaseModel):
-    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
     email: str
     username: str
     full_name: Optional[str] = None
-    is_active: bool
-    is_admin: bool
+    is_active: bool = True
+    is_admin: bool = False
 
 
 class UserLogin(BaseModel):
