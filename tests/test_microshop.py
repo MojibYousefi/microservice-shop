@@ -5,6 +5,7 @@ from httpx import AsyncClient, ASGITransport
 from sqlmodel import select
 from backend.config.config import settings
 from backend.config.database import init_db, async_session_maker
+from backend.config.network import network_manager
 from backend.auth_service.models import User
 from backend.auth_service.main import app as auth_app
 from backend.gateway.main import app as gateway_app
@@ -100,10 +101,9 @@ async def test_gateway_health() -> None:
 @pytest.mark.asyncio
 async def test_gateway_auth_proxy_routing() -> None:
     """
-    Verifies Gateway reverse proxy routing to Auth Service.
+    Verifies Gateway reverse proxy routing to Auth Service via network manager.
     """
-    import backend.gateway.main as gw
-    gw.http_client = AsyncClient(transport=ASGITransport(app=auth_app), base_url="http://auth-service:8001")
+    network_manager.client = AsyncClient(transport=ASGITransport(app=auth_app), base_url="http://auth-service:8001")
     try:
         transport = ASGITransport(app=gateway_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -113,5 +113,4 @@ async def test_gateway_auth_proxy_routing() -> None:
             assert "username" in data
             assert "email" in data
     finally:
-        await gw.http_client.aclose()
-        gw.http_client = None
+        await network_manager.stop()
