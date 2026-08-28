@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import "./App.css"
-import Navbar from './component/header/navbar/navbar'
+import Header from './component/header/header'
 
 
 export default class App extends Component {
   render() {
     return (
       <div>
-        <Navbar></Navbar>
+        <Header></Header>
       </div>
     )
   }
