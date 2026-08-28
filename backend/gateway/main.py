@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Optional, AsyncGenerator, Dict, Any, Set
 from contextlib import asynccontextmanager
 import httpx
 from fastapi import FastAPI, Request, Response, HTTPException, status
@@ -12,15 +13,18 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from backend.config.config import settings
 
 # Global async HTTP client for proxying requests
-http_client: httpx.AsyncClient = None
+http_client: Optional[httpx.AsyncClient] = None
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     global http_client
     http_client = httpx.AsyncClient(timeout=30.0)
-    yield
-    await http_client.aclose()
+    try:
+        yield
+    finally:
+        if http_client is not None:
+            await http_client.aclose()
 
 
 app = FastAPI(
@@ -40,22 +44,30 @@ app.add_middleware(
 
 
 @app.get("/health")
-async def gateway_health():
+async def gateway_health() -> Dict[str, Any]:
     """
     Health check verifying Gateway and internal service reachability.
     """
-    services_status = {}
-    service_map = {
+    services_status: Dict[str, str] = {}
+    service_map: Dict[str, str] = {
         "auth_service": settings.AUTH_SERVICE_URL,
     }
 
     for service_name, service_url in service_map.items():
         try:
-            resp = await http_client.get(f"{service_url}/health", timeout=3.0)
-            if resp.status_code == 200:
-                services_status[service_name] = "healthy"
+            if http_client is not None:
+                resp = await http_client.get(f"{service_url}/health", timeout=3.0)
+                if resp.status_code == 200:
+                    services_status[service_name] = "healthy"
+                else:
+                    services_status[service_name] = f"unhealthy (status {resp.status_code})"
             else:
-                services_status[service_name] = f"unhealthy (status {resp.status_code})"
+                async with httpx.AsyncClient(timeout=3.0) as temp_client:
+                    resp = await temp_client.get(f"{service_url}/health")
+                    if resp.status_code == 200:
+                        services_status[service_name] = "healthy"
+                    else:
+                        services_status[service_name] = f"unhealthy (status {resp.status_code})"
         except Exception as e:
             services_status[service_name] = f"unreachable ({str(e)})"
 
@@ -83,19 +95,31 @@ async def forward_request(request: Request, target_service_url: str) -> Response
     # Read body asynchronously
     body = await request.body()
 
+    client = http_client
+    if client is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="HTTP proxy client is uninitialized."
+        )
+
     try:
-        req = http_client.build_request(
+        req = client.build_request(
             method=request.method,
             url=target_url,
             headers=headers,
             content=body
         )
-        res = await http_client.send(req, stream=True)
+        res = await client.send(req, stream=True)
+
+        excluded_headers: Set[str] = {"content-encoding", "content-length", "transfer-encoding", "connection"}
+        response_headers = {
+            k: v for k, v in res.headers.items() if k.lower() not in excluded_headers
+        }
 
         return Response(
             content=await res.aread(),
             status_code=res.status_code,
-            headers=dict(res.headers)
+            headers=response_headers
         )
     except httpx.RequestError as exc:
         raise HTTPException(
@@ -109,12 +133,12 @@ async def forward_request(request: Request, target_service_url: str) -> Response
 # ==========================================
 
 @app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
-async def route_auth(request: Request, path: str):
+async def route_auth(request: Request, path: str) -> Response:
     return await forward_request(request, settings.AUTH_SERVICE_URL)
 
 
 @app.api_route("/api/v1/auth", methods=["GET", "POST", "OPTIONS"])
-async def route_auth_root(request: Request):
+async def route_auth_root(request: Request) -> Response:
     return await forward_request(request, settings.AUTH_SERVICE_URL)
 
 
