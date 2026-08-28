@@ -4,7 +4,7 @@ from fastapi import Request, Response, HTTPException, status
 from backend.config.config import settings
 
 
-class NetworkManager:
+class GatewayNetworkManager:
     """
     Manages internal network communication, connection pooling, and request proxying
     between the API Gateway and internal microservices.
@@ -110,13 +110,12 @@ class NetworkManager:
         return statuses
 
 
-# Global network manager instance
-network_manager = NetworkManager()
+# Global gateway network manager instance
+gateway_network = GatewayNetworkManager()
 
 
-async def get_network_manager() -> AsyncGenerator[NetworkManager, None]:
+async def get_gateway_network() -> AsyncGenerator[GatewayNetworkManager, None]:
     """
-    FastAPI dependency for accessing the NetworkManager.
+    FastAPI dependency for accessing GatewayNetworkManager.
     """
-    yield network_manager
-
+    yield gateway_network

@@ -12,7 +12,7 @@ security_bearer: HTTPBearer = HTTPBearer(auto_error=False)
 
 def hash_password(password: str) -> str:
     """
-    Hashes a plain text password using bcrypt.
+    Hashes a plain text password using pbkdf2_sha256.
     """
     return str(pwd_context.hash(password))
 
@@ -35,7 +35,7 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return encoded_jwt
+    return str(encoded_jwt)
 
 
 async def get_current_user_payload(

@@ -10,18 +10,18 @@ from fastapi.staticfiles import StaticFiles
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from backend.config.config import settings
-from backend.config.network import network_manager
+from backend.gateway.network import gateway_network
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Start internal network connection pool
-    await network_manager.start()
+    await gateway_network.start()
     try:
         yield
     finally:
         # Shutdown internal network connections
-        await network_manager.stop()
+        await gateway_network.stop()
 
 
 app = FastAPI(
@@ -43,12 +43,12 @@ app.add_middleware(
 @app.get("/health")
 async def gateway_health() -> Dict[str, Any]:
     """
-    Health check verifying Gateway and internal service reachability via the network manager.
+    Health check verifying Gateway and internal service reachability via gateway network manager.
     """
     service_map: Dict[str, str] = {
         "auth_service": settings.AUTH_SERVICE_URL,
     }
-    services_status = await network_manager.check_health(service_map)
+    services_status = await gateway_network.check_health(service_map)
 
     return {
         "gateway": "healthy",
@@ -63,12 +63,12 @@ async def gateway_health() -> Dict[str, Any]:
 
 @app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
 async def route_auth(request: Request, path: str) -> Response:
-    return await network_manager.forward_request(request, settings.AUTH_SERVICE_URL)
+    return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
 
 
 @app.api_route("/api/v1/auth", methods=["GET", "POST", "OPTIONS"])
 async def route_auth_root(request: Request) -> Response:
-    return await network_manager.forward_request(request, settings.AUTH_SERVICE_URL)
+    return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
 
 
 # Mount frontend static directory if exists

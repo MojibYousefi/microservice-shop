@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from backend.config.config import settings
 from backend.config.database import init_db, get_async_session
 from backend.auth_service.models import User, UserCreate, UserRead, UserLogin, Token
-from backend.config.security import (
+from backend.gateway.security import (
     hash_password,
     verify_password,
     create_access_token,
