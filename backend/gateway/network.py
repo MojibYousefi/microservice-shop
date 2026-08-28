@@ -119,3 +119,4 @@ async def get_gateway_network() -> AsyncGenerator[GatewayNetworkManager, None]:
     FastAPI dependency for accessing GatewayNetworkManager.
     """
     yield gateway_network
+

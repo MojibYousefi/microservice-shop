@@ -115,3 +115,4 @@ async def get_current_admin_user_payload(
                 detail="Admin privileges required."
             )
     return payload
+
