@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import AsyncGenerator, Dict, Any
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlmodel import select
@@ -20,7 +21,7 @@ from backend.config.security import (
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Async database initialization
     await init_db()
     yield
@@ -34,7 +35,7 @@ app = FastAPI(
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     return {"status": "ok", "service": "auth_service", "debug": settings.DEBUG}
 
 
@@ -42,7 +43,7 @@ async def health_check():
 async def register(
     user_in: UserCreate,
     db: AsyncSession = Depends(get_async_session)
-):
+) -> User:
     # Check if username or email already exists asynchronously
     stmt_username = select(User).where(User.username == user_in.username)
     res_username = await db.exec(stmt_username)
@@ -71,7 +72,7 @@ async def register(
 async def login(
     credentials: UserLogin,
     db: AsyncSession = Depends(get_async_session)
-):
+) -> Token:
     stmt = select(User).where(
         (User.username == credentials.username_or_email) |
         (User.email == credentials.username_or_email)
@@ -88,8 +89,9 @@ async def login(
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user account.")
 
+    user_id_str = str(user.id) if user.id is not None else ""
     access_token = create_access_token(data={
-        "sub": str(user.id),
+        "sub": user_id_str,
         "username": user.username,
         "email": user.email,
         "is_admin": user.is_admin
@@ -110,30 +112,34 @@ async def login(
 
 @app.get("/api/v1/auth/me", response_model=UserRead)
 async def get_me(
-    payload: dict = Depends(get_current_user_payload),
+    payload: Dict[str, Any] = Depends(get_current_user_payload),
     db: AsyncSession = Depends(get_async_session)
-):
+) -> UserRead:
     user_id = payload.get("user_id")
-    if user_id:
-        stmt = select(User).where(User.id == user_id)
-        res = await db.exec(stmt)
-        user = res.first()
-        if user:
-            return UserRead(
-                id=user.id,
-                email=user.email,
-                username=user.username,
-                full_name=user.full_name,
-                is_active=user.is_active,
-                is_admin=user.is_admin
-            )
+    if user_id is not None:
+        try:
+            parsed_id = int(user_id)
+            stmt = select(User).where(User.id == parsed_id)
+            res = await db.exec(stmt)
+            user = res.first()
+            if user:
+                return UserRead(
+                    id=user.id,
+                    email=user.email,
+                    username=user.username,
+                    full_name=user.full_name,
+                    is_active=user.is_active,
+                    is_admin=user.is_admin
+                )
+        except (ValueError, TypeError):
+            pass
 
     # If user not found in DB but in DEBUG mode, return mock user
     if settings.DEBUG:
         return UserRead(
             id=1,
-            email=payload.get("email", "admin@microshop.dev"),
-            username=payload.get("username", "debug_admin"),
+            email=str(payload.get("email", "admin@microshop.dev")),
+            username=str(payload.get("username", "debug_admin")),
             full_name="Debug Admin User",
             is_active=True,
             is_admin=True

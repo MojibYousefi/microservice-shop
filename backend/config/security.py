@@ -6,25 +6,25 @@ from fastapi import HTTPException, Security, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.config.config import settings
 
-pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-security_bearer = HTTPBearer(auto_error=False)
+pwd_context: CryptContext = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+security_bearer: HTTPBearer = HTTPBearer(auto_error=False)
 
 
 def hash_password(password: str) -> str:
     """
     Hashes a plain text password using bcrypt.
     """
-    return pwd_context.hash(password)
+    return str(pwd_context.hash(password))
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verifies a plain text password against a stored hash.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    return bool(pwd_context.verify(plain_password, hashed_password))
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """
     Creates a signed JWT access token.
     """
