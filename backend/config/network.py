@@ -119,3 +119,4 @@ async def get_network_manager() -> AsyncGenerator[NetworkManager, None]:
     FastAPI dependency for accessing the NetworkManager.
     """
     yield network_manager
+
