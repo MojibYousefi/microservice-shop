@@ -1,21 +1,24 @@
+from typing import AsyncGenerator
 import uuid
 import pytest
 from httpx import AsyncClient, ASGITransport
 from sqlmodel import select
 from backend.config.config import settings
 from backend.config.database import init_db, async_session_maker
+from backend.gateway.network import gateway_network
 from backend.auth_service.models import User
 from backend.auth_service.main import app as auth_app
+from backend.gateway.main import app as gateway_app
 
 
 @pytest.fixture(autouse=True)
-async def setup_test_db():
+async def setup_test_db() -> AsyncGenerator[None, None]:
     await init_db()
     yield
 
 
 @pytest.mark.asyncio
-async def test_async_database_init_and_session():
+async def test_async_database_init_and_session() -> None:
     """
     Verifies asynchronous database initialization and session querying.
     """
@@ -27,7 +30,7 @@ async def test_async_database_init_and_session():
 
 
 @pytest.mark.asyncio
-async def test_auth_service_registration_and_login():
+async def test_auth_service_registration_and_login() -> None:
     """
     Verifies Auth Service user registration and JWT token creation.
     """
@@ -59,7 +62,7 @@ async def test_auth_service_registration_and_login():
 
 
 @pytest.mark.asyncio
-async def test_debug_mode_jwt_behavior():
+async def test_debug_mode_jwt_behavior() -> None:
     """
     Verifies DEBUG=True dev token bypass vs DEBUG=False strict token verification.
     """
@@ -79,3 +82,35 @@ async def test_debug_mode_jwt_behavior():
 
     # Reset debug mode
     settings.DEBUG = True
+
+
+@pytest.mark.asyncio
+async def test_gateway_health() -> None:
+    """
+    Verifies Gateway /health endpoint.
+    """
+    transport = ASGITransport(app=gateway_app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        resp = await ac.get("/health")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["gateway"] == "healthy"
+        assert "services" in data
+
+
+@pytest.mark.asyncio
+async def test_gateway_auth_proxy_routing() -> None:
+    """
+    Verifies Gateway reverse proxy routing to Auth Service via gateway network manager.
+    """
+    gateway_network.client = AsyncClient(transport=ASGITransport(app=auth_app), base_url="http://auth-service:8001")
+    try:
+        transport = ASGITransport(app=gateway_app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            resp = await ac.get("/api/v1/auth/me", headers={"Authorization": "Bearer dev-mock-token"})
+            assert resp.status_code == 200
+            data = resp.json()
+            assert "username" in data
+            assert "email" in data
+    finally:
+        await gateway_network.stop()

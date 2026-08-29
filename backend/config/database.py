@@ -1,20 +1,20 @@
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from typing import AsyncGenerator, Any, Dict
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from backend.config.config import settings
 
 # Ensure SQLite engine connects properly with async driver and check_same_thread=False
-engine_kwargs = {"echo": settings.DEBUG}
+engine_kwargs: Dict[str, Any] = {"echo": settings.DEBUG}
 if settings.DATABASE_URL.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 
-async_engine = create_async_engine(
+async_engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
     **engine_kwargs
 )
 
-async_session_maker = async_sessionmaker(
+async_session_maker: async_sessionmaker[AsyncSession] = async_sessionmaker(
     bind=async_engine,
     class_=AsyncSession,
     expire_on_commit=False,

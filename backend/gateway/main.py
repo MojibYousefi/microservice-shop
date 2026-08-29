@@ -1,8 +1,8 @@
 import os
 import sys
+from typing import AsyncGenerator, Dict, Any
 from contextlib import asynccontextmanager
-import httpx
-from fastapi import FastAPI, Request, Response, HTTPException, status
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -10,17 +10,18 @@ from fastapi.staticfiles import StaticFiles
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from backend.config.config import settings
-
-# Global async HTTP client for proxying requests
-http_client: httpx.AsyncClient = None
+from backend.gateway.network import gateway_network
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    global http_client
-    http_client = httpx.AsyncClient(timeout=30.0)
-    yield
-    await http_client.aclose()
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Start internal network connection pool
+    await gateway_network.start()
+    try:
+        yield
+    finally:
+        # Shutdown internal network connections
+        await gateway_network.stop()
 
 
 app = FastAPI(
@@ -29,7 +30,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS
+# Enable CORS for browser communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -40,24 +41,14 @@ app.add_middleware(
 
 
 @app.get("/health")
-async def gateway_health():
+async def gateway_health() -> Dict[str, Any]:
     """
-    Health check verifying Gateway and internal service reachability.
+    Health check verifying Gateway and internal service reachability via gateway network manager.
     """
-    services_status = {}
-    service_map = {
+    service_map: Dict[str, str] = {
         "auth_service": settings.AUTH_SERVICE_URL,
     }
-
-    for service_name, service_url in service_map.items():
-        try:
-            resp = await http_client.get(f"{service_url}/health", timeout=3.0)
-            if resp.status_code == 200:
-                services_status[service_name] = "healthy"
-            else:
-                services_status[service_name] = f"unhealthy (status {resp.status_code})"
-        except Exception as e:
-            services_status[service_name] = f"unreachable ({str(e)})"
+    services_status = await gateway_network.check_health(service_map)
 
     return {
         "gateway": "healthy",
@@ -66,56 +57,18 @@ async def gateway_health():
     }
 
 
-async def forward_request(request: Request, target_service_url: str) -> Response:
-    """
-    Asynchronous XHTTP request proxying and forwarding mechanism.
-    Routes request method, headers, query parameters, and body to internal microservices.
-    """
-    url_path = request.url.path
-    query_string = request.url.query
-    target_url = f"{target_service_url}{url_path}"
-    if query_string:
-        target_url = f"{target_url}?{query_string}"
-
-    headers = dict(request.headers)
-    headers.pop("host", None)
-
-    # Read body asynchronously
-    body = await request.body()
-
-    try:
-        req = http_client.build_request(
-            method=request.method,
-            url=target_url,
-            headers=headers,
-            content=body
-        )
-        res = await http_client.send(req, stream=True)
-
-        return Response(
-            content=await res.aread(),
-            status_code=res.status_code,
-            headers=dict(res.headers)
-        )
-    except httpx.RequestError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Service proxy error to {target_service_url}: {str(exc)}"
-        )
-
-
 # ==========================================
-# Route Handlers for Gateway
+# Gateway Route Handlers - Route to Network Manager
 # ==========================================
 
 @app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
-async def route_auth(request: Request, path: str):
-    return await forward_request(request, settings.AUTH_SERVICE_URL)
+async def route_auth(request: Request, path: str) -> Response:
+    return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
 
 
 @app.api_route("/api/v1/auth", methods=["GET", "POST", "OPTIONS"])
-async def route_auth_root(request: Request):
-    return await forward_request(request, settings.AUTH_SERVICE_URL)
+async def route_auth_root(request: Request) -> Response:
+    return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
 
 
 # Mount frontend static directory if exists

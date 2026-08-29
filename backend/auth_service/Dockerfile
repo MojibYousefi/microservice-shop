@@ -15,8 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/auth_service/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy shared modules and auth service code
+# Copy config, gateway (security/network), and auth service code
 COPY backend/config /app/backend/config
+COPY backend/gateway /app/backend/gateway
 COPY backend/auth_service /app/backend/auth_service
 
 EXPOSE 8001
