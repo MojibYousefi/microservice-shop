@@ -1,0 +1,47 @@
+.ProductCart {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+
+  background: #5e0006;
+
+  width: fit-content;
+  height: auto;
+
+  border-radius: 15px;
+
+  margin-bottom: 50px;
+  margin-top: 50px;
+}
+.product-image img {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  aspect-ratio: 2 / 1;
+}
+
+.ProductCart {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.product-text {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  color: var(--base-text);
+  text-align: center;
+}
+.old-price{
+  opacity: 50%;
+}
+
+.perfum-title {
+  color: var(--base-text);
+}

@@ -49,7 +49,7 @@ export default class Header extends Component {
 
           <div>
             <Navbar></Navbar>
-            <div className='header-container'>
+            <div className='header-container container'>
               <div className='header-content'>
                 <h1>تجربه <span>لوکس ترین</span> عطر ها </h1>
 

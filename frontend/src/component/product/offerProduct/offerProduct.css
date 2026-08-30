@@ -1,0 +1,28 @@
+.offerProductCart {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+
+  width: 1300px;
+  margin: 0 auto;
+}
+.offertitle {
+  text-align: right;
+  padding-right: 250px;
+  color: var(--base-text);
+  margin:10px 0 0 0;
+  
+}
+
+/*offer prdouct cart */
+
+.offerPercentage {
+  position: absolute;
+  top: 0px;
+  left: 10px;
+  background: #d53e0f;
+  color: var(--base-text);
+  padding: 5px 10px;
+  border-radius: 8px;
+}
