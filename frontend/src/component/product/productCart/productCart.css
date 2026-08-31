@@ -30,7 +30,16 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.product-text {
+.perfum-title {
+  color: var(--base-text);
+}
+
+/* offer product */
+.old-price{
+  opacity: 50%;
+}
+
+.offerPrice{
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -38,10 +47,15 @@
   color: var(--base-text);
   text-align: center;
 }
-.old-price{
-  opacity: 50%;
+/* best seels */
+.place{
+  background: var(--base-text);
+  padding: 2px 5px;
+  border-radius: 5px;
+  position: absolute;
+  left: 20px;
+  top: 133px;
 }
-
-.perfum-title {
+.BSPprice{
   color: var(--base-text);
 }

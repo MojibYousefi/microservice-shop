@@ -1,0 +1,16 @@
+.best-seel-product {
+  width: 1300px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 5px;
+
+  margin: 0 auto;
+}
+.bestseals-tltle {
+  text-align: right;
+  padding-right: 250px;
+  color: var(--base-text);
+  margin: 10px 0 0 0;
+}

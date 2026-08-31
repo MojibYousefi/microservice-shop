@@ -55,7 +55,7 @@ export default class OfferProduct extends Component {
     }
     render() {
         return (
-            <div className=''>
+            <div>
                 <h2 className='offertitle'>محصولات تخفیف با بیشترین تخفیف</h2>
                 <div className='offerProductCart'>
                     {this.state.products.map(perf =>
