@@ -45,7 +45,7 @@ export default class ProductCart extends Component {
                     )}
 
                 </div>
-
+                    <button className='cartbtn'>مشاهده</button>
             </div>
         )
     }
