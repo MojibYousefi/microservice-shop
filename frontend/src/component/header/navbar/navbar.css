@@ -228,10 +228,12 @@ MOBILE NAVBAR
   padding: 10px 0;
 
   display: flex;
-  justify-content: space-evenly;
+  justify-content: center;
   gap: 30px;
 
   background-color: #5E0006;
+
+  z-index: 1000;
 }
 
 .mobile-navbar-item a {
