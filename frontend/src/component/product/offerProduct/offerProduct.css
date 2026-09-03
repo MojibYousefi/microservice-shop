@@ -24,7 +24,7 @@
   content: "";
   width: 455px;
   height: 2px;
-  background: #eed9b9;
+  background: #420004;
 }
 
 .offerPercentage {
@@ -32,8 +32,8 @@
   top: 15px;
   left: 15px;
 
-  background: #9b0f06;
-  color: var(--base-text);
+  background-color: #c7d3c0;
+  color: #420004;
 
   padding: 7px 12px;
   border-radius: 8px;

@@ -23,7 +23,7 @@
   content: "";
   width: 500px;
   height: 2px;
-  background: #eed9b9;
+  background-color: #420004;
 }
 @media (max-width : 900px) {
   .best-seel-product{
