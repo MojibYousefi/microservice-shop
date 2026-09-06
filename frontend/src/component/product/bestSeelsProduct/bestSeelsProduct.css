@@ -1,32 +1,90 @@
-.best-seel-product {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 16px;
-
-  width: 80%;
-  max-width: 1250px;
+.products-viewport {
+  width: 1300px;
+  overflow: hidden;
   margin: 0 auto;
 }
-.bestseals-tltle {
+
+.products-track {
+  display: flex;
+  gap: 20px;
+  transition: transform 0.4s ease;
+}
+
+.products-track .ProductCart {
+  flex: 0 0 calc((1300px - 60px) / 4);
+}
+.products-slider {
   position: relative;
+  width: 1300px;
+  margin: 0 auto;
+}
+.slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 45px;
+  height: 45px;
+
+  border: none;
+  border-radius: 50%;
+
+  background-color: var(--accent);
+  color: var(--text);
+
+  font-size: 28px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
 
-  color: var(--base-text);
-  margin: 10px 0 0 0;
+  cursor: pointer;
+  z-index: 10;
 }
-.bestseals-tltle::before,
-.bestseals-tltle::after {
+.slider-btn.prev {
+  left: -60px;
+}
+
+.slider-btn.next {
+  right: -60px;
+}
+
+.best-seal-title {
+  display: flex;
+  justify-content: space-between;
+  width: 1300px;
+  margin: 0 auto;
+}
+.right-text {
+  text-align: right;
+}
+.right-text span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: rtl;
+
+  color: var(--accent);
+
+  font-weight: 500;
+}
+.right-text span::before {
   content: "";
-  width: 500px;
-  height: 2px;
-  background-color: #420004;
+  width: 40px;
+  height: 1px;
+  background-color: var(--accent);
+  flex-shrink: 0;
 }
-@media (max-width : 900px) {
-  .best-seel-product{
+.right-text h2 {
+  color: var(--text);
+}
+.whach-all a {
+  text-decoration: none;
+  color: var(--accent);
+  font-size: 14px;
+}
+@media (max-width: 900px) {
+  .best-seel-product {
     display: flex;
     gap: 16px;
 
@@ -36,18 +94,18 @@
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
-  .best-seel-product::-webkit-scrollbar{
+  .best-seel-product::-webkit-scrollbar {
     display: none;
   }
-  .bestseals-tltle{
+  .bestseals-tltle {
     display: flex;
     align-items: center;
     gap: 12px;
   }
-  .bestseals-tltle::after, 
-  .bestseals-tltle::before{
+  .bestseals-tltle::after,
+  .bestseals-tltle::before {
     content: "";
     height: 2px;
     flex: 1;
-  } 
+  }
 }

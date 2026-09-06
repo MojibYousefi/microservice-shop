@@ -12,10 +12,7 @@ export default class ProductCart extends Component {
                     <img src={this.props.ProductImage} alt="" />
                 </div>
 
-                {/* product cart offer */}
-                {this.props.offerPercentage && (
-                    <p className='offerPercentage'>{this.props.offerPercentage}</p>
-                )}
+
 
                 {/* product cart name title */}
                 <h3 className='perfum-title'>
@@ -42,9 +39,10 @@ export default class ProductCart extends Component {
                             </del>
                         </div>
                     )}
+                    <button>افزودن به سبد خرید</button>
 
                 </div>
             </div>
-        )
+        ) 
     }
 }

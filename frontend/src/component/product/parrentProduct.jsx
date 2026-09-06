@@ -6,8 +6,8 @@ export default class ParrentProduct extends Component {
   render() {
     return (
       <div>
-        <OfferProduct></OfferProduct>
         <BestSeelsProduct></BestSeelsProduct>
+        <OfferProduct></OfferProduct>
       </div>
     )
   }

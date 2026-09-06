@@ -1,5 +1,4 @@
 body{
     margin: 0;
-    background-color: var(--bg-base);
-    font-family: "Vazirmatn", sans-serif;
+    background-color: var(--background);
 }

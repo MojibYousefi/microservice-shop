@@ -3,7 +3,6 @@ import "./offerProduct.css"
 import ProductCart from '../productCart/productCart'
 import productimage from "../../../assets/picture/product.png"
 
-
 export default class OfferProduct extends Component {
     constructor(props) {
         super(props)
@@ -15,7 +14,6 @@ export default class OfferProduct extends Component {
                     perfumName: "svage elexir",
                     price: "4,500,000",
                     ProductImage: productimage,
-                    offerPercentage: "25%",
                     priceAfteroff: "4,000,000"
                 },
                 {
@@ -23,7 +21,6 @@ export default class OfferProduct extends Component {
                     perfumName: "creed aventus",
                     price: "6,000,000",
                     ProductImage: productimage,
-                    offerPercentage: "10%",
                     priceAfteroff: "5,400,000"
                 },
                 {
@@ -31,7 +28,6 @@ export default class OfferProduct extends Component {
                     perfumName: "blue chanel",
                     price: "3,650,000",
                     ProductImage: productimage,
-                    offerPercentage: "80%",
                     priceAfteroff: "800,000"
                 },
                 {
@@ -39,7 +35,6 @@ export default class OfferProduct extends Component {
                     perfumName: "floris",
                     price: "8,200,000",
                     ProductImage: productimage,
-                    offerPercentage: "35%",
                     priceAfteroff: "6,500,000"
                 },
                 {
@@ -47,26 +42,84 @@ export default class OfferProduct extends Component {
                     perfumName: "almas",
                     price: "7,000,000",
                     ProductImage: productimage,
-                    offerPercentage: "40%",
-                    priceAfteroff: "4,000,000",
+                    priceAfteroff: "4,000,000"
                 },
-            ]
+            ],
+
+            slide: 0
         }
     }
+
+    nextSlide = () => {
+        this.setState(prevState => ({
+            slide: Math.min(
+                prevState.slide + 1,
+                this.state.products.length - 4
+            )
+        }))
+    }
+
+    prevSlide = () => {
+        this.setState(prevState => ({
+            slide: Math.max(
+                prevState.slide - 1,
+                0
+            )
+        }))
+    }
+
     render() {
         return (
             <div>
-                <h2 className='offertitle'>محصولات تخفیف با بیشترین تخفیف</h2>
-                <div className='offerProductCart'>
-                    {this.state.products.map(perf =>
-                        <ProductCart
-                            key={perf.id}
-                            {...perf}
-                        />
-                    )}
-                    <p>{this.state.offerPercentage}</p>
-                    <p>{this.state.priceAfteroff}</p>
+
+                <div className='offer-title'>
+
+                    <p className='whach-all'><a href="">← مشاهده همه</a></p>
+
+                    <div className='right-txt'>
+                        <span>فرصت محدود برای خرید لوکس</span>
+                        <h2>محصولات با بیشترین تخفیف</h2>
+                    </div>
                 </div>
+
+                <div className='offer-slider'>
+
+                    <button
+                        onClick={this.prevSlide}
+                        className='offer-slider-btn prev'
+                    >
+                        ‹
+                    </button>
+
+                    <div className='offer-viewport'>
+
+                        <div
+                            className='offer-track'
+                            style={{
+                                transform: `translateX(-${this.state.slide * 328}px)`
+                            }}
+                        >
+
+                            {this.state.products.map(perf =>
+                                <ProductCart
+                                    key={perf.id}
+                                    {...perf}
+                                />
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        onClick={this.nextSlide}
+                        className='offer-slider-btn next'
+                    >
+                        ›
+                    </button>
+
+                </div>
+
             </div>
         )
     }

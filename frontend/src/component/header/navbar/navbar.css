@@ -27,6 +27,7 @@
   height: 64px;
 
   margin: 0 auto;
+  margin-top: 10px !important;
 
   padding: 0 20px;
 
@@ -36,9 +37,8 @@
   align-items: center;
   justify-content: space-between;
 
-  background: rgb(66, 0, 4);
+  background: #2B0003;
 
-  border: 1px solid rgba(238, 217, 185, 0.15);
   border-radius: 20px;
 
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
@@ -51,10 +51,11 @@
 .navbar-logo {
   display: flex;
   align-items: center;
+  justify-content: center;
 
   gap: 8px;
 
-  color: #eed9b9;
+  color: var(--text);
 
   min-width: 160px;
 }
@@ -67,13 +68,13 @@
   align-items: center;
   justify-content: center;
 
-  border: 1px solid #eed9b9;
+  border: 1px solid var(--text);
 
   border-radius: 50%;
 
   font-size: 22px;
 
-  color: #eed9b9;
+  color: var(--text);
 }
 
 .logo-text {
@@ -115,7 +116,7 @@
 .navbar-menu a {
   position: relative;
 
-  color: #eed9b9;
+  color: var(--text);
 
   text-decoration: none;
 
@@ -135,13 +136,13 @@
   width: 0;
   height: 1px;
 
-  background: #c7d3c0;
+  background: var(--accent);
 
   transition: width 0.3s ease;
 }
 
 .navbar-menu a:hover {
-  color: #c7d3c0;
+  color: var(--primary);
 }
 
 .navbar-menu a:hover::after {
@@ -155,6 +156,7 @@
 .navbar-actions {
   display: flex;
   align-items: center;
+  gap: 10px;
 
 
   min-width: 160px;
@@ -163,7 +165,8 @@
 }
 
 .signin {
-  color: #eed9b9; 
+
+  color: var(--primary); 
 
   padding: 5px 10px;
   border-radius: 20px;
@@ -172,14 +175,14 @@
 
   font-family: Arial, sans-serif;
 
-  font-size: 12px;
+  font-size: 14px;
 
   transition: 0.3s;
 }
 
 .signin:hover {
-  color: #350003;
-  background-color: #eed9b9;
+  color: var(--background);
+  background-color: var(--accent);
 }
 
 /* =========================
@@ -193,9 +196,9 @@
 
   border-radius: 12px;
 
-  background: var(--base-text);
+  background: var(--primary);
 
-  color: var(--bg-base);
+  color: var(--background);
 
   font-family: inherit;
 
@@ -211,9 +214,7 @@
 }
 
 .start-btn:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 8px 20px rgba(213, 62, 15, 0.35);
+  background: var(--accent);
 }
 
 .start-btn:active {

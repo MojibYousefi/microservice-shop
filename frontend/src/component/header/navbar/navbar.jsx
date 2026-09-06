@@ -49,6 +49,24 @@ export default class Navbar extends Component {
                     // desktop navbar
                     <div className="navbar-container">
 
+                        <div className="navbar-actions">
+                            <button className="start-btn">
+                                شروع کنید
+                            </button>
+
+                            <a href="#" className="signin">
+                                Sign in
+                            </a>
+
+                        </div>
+
+                        <div className="navbar-menu">
+                            <a href="#">تماس با ما</a>
+                            <a href="#">درباره ما</a>
+                            <a href="#">هدیه</a>
+                            <a href="#">کلکسیون عطرها</a>
+                        </div>
+
 
                         <div className="navbar-logo">
                             <div className="logo-icon">
@@ -59,27 +77,6 @@ export default class Navbar extends Component {
                                 <span>Aura</span>
                                 <span>Étoile</span>
                             </div>
-                        </div>
-
-
-
-                        <div className="navbar-menu">
-                            <a href="#">تماس با ما</a>
-                            <a href="#">درباره ما</a>
-                            <a href="#">هدیه</a>
-                            <a href="#">کلکسیون عطرها</a>
-                        </div>
-
-
-
-                        <div className="navbar-actions">
-                            <a href="#" className="signin">
-                                Sign in
-                            </a>
-
-                            <button className="start-btn">
-                                شروع کنید
-                            </button>
                         </div>
 
                     </div>

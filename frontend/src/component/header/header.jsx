@@ -51,10 +51,20 @@ export default class Header extends Component {
             <Navbar></Navbar>
             <div className='header-container container'>
               <div className='header-content'>
-                <h1>تجربه <span>لوکس ترین</span> عطر ها </h1>
 
-                <p>شاهکار هایی از دنیای عطر سازی</p>
+                <span>مجموعه سلطنتی فرانسه و شرق</span>
+                
+                <h1>
+                  عطرهای اصل و خاص
+                  <br />
+                  تجلی شکوه و اصالت
+                </h1>
 
+                <p>
+                  کشف رایحه‌های ناب و نفیس که هویت شما را به تصویر می‌کشند.
+                  با نوآر اسنس، امضای بویایی منحصر‌به‌فرد خود را در میان برترین برندهای
+                  نیش جهان بیابید.
+                </p>
                 <button className='header-button'>مشاهده کلکسیون </button>
               </div>
             </div>
