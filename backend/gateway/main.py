@@ -68,19 +68,9 @@ async def route_auth(request: Request, path: str) -> Response:
     return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
 
 
-@app.api_route("/api/v1/auth", methods=["GET", "POST", "OPTIONS"])
-async def route_auth_root(request: Request) -> Response:
-    return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
-
-
 # Catalogue Service Routing
 @app.api_route("/api/v1/catalogue/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
 async def route_catalogue(request: Request, path: str) -> Response:
-    return await gateway_network.forward_request(request, settings.CATALOGUE_SERVICE_URL)
-
-
-@app.api_route("/api/v1/catalogue", methods=["GET", "POST", "OPTIONS"])
-async def route_catalogue_root(request: Request) -> Response:
     return await gateway_network.forward_request(request, settings.CATALOGUE_SERVICE_URL)
 
 
