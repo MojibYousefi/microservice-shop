@@ -3,14 +3,13 @@ version: "3.8"
 networks:
   microshop-net:
     driver: bridge
-    internal: false # Allows gateway to communicate externally while keeping internal services isolated
 
 volumes:
   postgres_data:
   redis_data:
 
 services:
-  # Internal Database - No host port exposure
+  # Local Development Database
   postgres:
     image: postgres:17.5-alpine3.22
     container_name: microshop-postgres
@@ -19,6 +18,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-micro_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-micro_pass}
       POSTGRES_DB: ${POSTGRES_DB:-microshop_db}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -29,11 +30,13 @@ services:
       timeout: 5s
       retries: 5
 
-  # Internal Cache - No host port exposure
+  # Local Development Redis Cache
   redis:
     image: redis:8.4-alpine
     container_name: microshop-redis
     restart: always
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -44,13 +47,15 @@ services:
       timeout: 5s
       retries: 5
 
-  # Internal Auth Microservice - No host port exposure
+  # Auth Microservice (Docs: http://localhost:8001/docs)
   auth-service:
     build:
       context: ..
       dockerfile: backend/auth_service/Dockerfile
     container_name: microshop-auth-service
     restart: always
+    ports:
+      - "8001:8001"
     environment:
       - DEBUG=${DEBUG:-True}
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
@@ -64,7 +69,29 @@ services:
     networks:
       - microshop-net
 
-  # Public API Gateway - ONLY service exposing port 8000 to the outside world
+  # Catalogue Microservice (Docs: http://localhost:8002/docs)
+  catalogue-service:
+    build:
+      context: ..
+      dockerfile: backend/catalogue/Dockerfile
+    container_name: microshop-catalogue-service
+    restart: always
+    ports:
+      - "8002:8002"
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - microshop-net
+
+  # Public API Gateway (Docs: http://localhost:8000/docs)
   gateway:
     build:
       context: ..
@@ -76,7 +103,9 @@ services:
     environment:
       - DEBUG=${DEBUG:-True}
       - AUTH_SERVICE_URL=http://auth-service:8001
+      - CATALOGUE_SERVICE_URL=http://catalogue-service:8002
     depends_on:
       - auth-service
+      - catalogue-service
     networks:
       - microshop-net
