@@ -4,7 +4,8 @@
 .offer-title{
   display: flex;
   justify-content: space-between;
-  width: 1300px;
+  align-items: center;
+  width: 1250px;
   margin: 30px auto;
 }
 .right-txt{
@@ -30,95 +31,16 @@
   background-color: var(--accent);
   flex-shrink: 0;
 }
-
-
-/* =========================
-   OFFER SLIDER
-========================= */
-
-.offer-slider {
-  position: relative;
-
-  width: 1300px;
-
+.offer-product {
+  width: 1250px;
   margin: 0 auto;
 }
-
-/* =========================
-   VIEWPORT
-========================= */
-
-.offer-viewport {
-  width: 1300px;
-
-  overflow: hidden;
+.offer-product .swiper {
+  width: 100%;
 }
-
-/* =========================
-   TRACK
-========================= */
-
-.offer-track {
+.offer-product .swiper-slide {
   display: flex;
-
-  gap: 16px;
-
-  transition: transform 0.4s ease;
-}
-
-/* =========================
-   PRODUCT CARD
-========================= */
-
-.offer-track > .ProductCart {
-  flex: 0 0 312px;
-}
-
-/* =========================
-   SLIDER BUTTON
-========================= */
-
-.offer-slider-btn {
-  position: absolute;
-
-  top: 50%;
-
-  transform: translateY(-50%);
-
-  width: 45px;
-  height: 45px;
-
-  border: none;
-  border-radius: 50%;
-
-  background-color: var(--accent);
-  color: var(--text);
-
-  font-size: 28px;
-
-  display: flex;
-  align-items: center;
   justify-content: center;
-
-  cursor: pointer;
-
-  z-index: 10;
-}
-
-/* =========================
-   PREVIOUS
-========================= */
-
-.offer-slider-btn.prev {
-  left: -60px;
-}
-
-/* =========================
-   NEXT
-========================= */
-
-.offer-slider-btn.next {
-  right: -60px;
 }
 @media (max-width: 900px) {
   .offerProductCart {

@@ -1,7 +1,12 @@
-import React, { Component } from 'react'
-import ProductCart from '../productCart/productCart'
 import './bestSeelsProduct.css'
+import ProductCart from '../productCart/productCart'
 import productimage from "../../../assets/picture/product.png"
+
+import React, { Component } from 'react'
+
+import { Autoplay } from 'swiper/modules'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import 'swiper/css'
 
 export default class BestSeelsProduct extends Component {
     constructor(props) {
@@ -38,22 +43,15 @@ export default class BestSeelsProduct extends Component {
                     priceforBSP: "7,000,000",
                     ProductImage: productimage,
                 },
+                {
+                    id: 6,
+                    perfumName: "test",
+                    priceforBSP: "1,000,000",
+                    ProductImage: productimage,
+                }
             ],
             slide: 0
         }
-    }
-    nextSlide = () => {
-        this.setState(prevState => ({
-            slide: Math.min(
-                prevState.slide + 1,
-                this.state.products.length - 4
-            )
-        }))
-    }
-    prevSlide = () => {
-        this.setState(prevState => ({
-            slide: Math.max(prevState.slide - 1, 0)
-        }))
     }
     render() {
         return (
@@ -67,24 +65,26 @@ export default class BestSeelsProduct extends Component {
                         <h2>پرفروش ترین محصولات</h2>
                     </div>
                 </div>
-                <div className='products-slider'>
-                    <button onClick={this.prevSlide} className='slider-btn prev'>‹</button>
-                    <div className='products-viewport'>
-                        <div
-                            className='products-track'
-                            style={{
-                                transform: `translateX(-${this.state.slide * 330}px)`
-                            }}
-                        >
-                            {this.state.products.map(perf =>
+                <div className='best-seal-product'>
+                    <Swiper
+                        modules={[Autoplay]}
+                        slidesPerView={5}
+                        spaceBetween={20}
+                        autoplay={{
+                            delay: 2000,
+                            pauseOnMouseEnter: true,
+                            disableOnInteraction: false
+                        }}
+                    >
+                        {this.state.products.map(perf =>
+                            <SwiperSlide key={perf.id}>
                                 <ProductCart
-                                    key={perf.id}
                                     {...perf}
                                 />
-                            )}
-                        </div>
-                    </div>
-                    <button className='slider-btn next' onClick={this.nextSlide}>›</button>
+                            </SwiperSlide>
+                        )}
+
+                    </Swiper>
                 </div>
             </div>
         )

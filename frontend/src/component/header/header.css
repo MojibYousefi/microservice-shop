@@ -1,8 +1,8 @@
 .header-container {
-  max-width: 1400px;
+  max-width: 1250px;
   height: 680px;
   margin: 0 auto;
-
+  padding: 0 !important;
   background: var(--background);
 
   display: flex;
@@ -17,7 +17,6 @@
   width: 50%;
   direction: rtl;
 
-  transform: translateX(-35px);
 }
 .header-content span {
   display: flex;
