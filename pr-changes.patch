@@ -1,0 +1,2787 @@
+diff --git a/backend copy/auth_service/Dockerfile b/backend copy/auth_service/Dockerfile
+new file mode 100644
+index 0000000..671f98c
+--- /dev/null
++++ b/backend copy/auth_service/Dockerfile	
+@@ -0,0 +1,24 @@
++FROM python:3.11-slim
++
++WORKDIR /app
++
++# Prevent Python from writing pyc files and buffering stdout/stderr
++ENV PYTHONDONTWRITEBYTECODE=1
++ENV PYTHONUNBUFFERED=1
++ENV PYTHONPATH=/app
++
++# Install system dependencies
++RUN apt-get update && apt-get install -y --no-install-recommends \
++    gcc libpq-dev \
++    && rm -rf /var/lib/apt/lists/*
++
++COPY backend/auth_service/requirements.txt /app/requirements.txt
++RUN pip install --no-cache-dir -r requirements.txt
++
++# Copy shared modules and auth service code
++COPY backend/config /app/backend/config
++COPY backend/auth_service /app/backend/auth_service
++
++EXPOSE 8001
++
++CMD ["python", "-m", "backend.auth_service.main"]
+diff --git a/backend copy/auth_service/main.py b/backend copy/auth_service/main.py
+new file mode 100644
+index 0000000..b2a32ca
+--- /dev/null
++++ b/backend copy/auth_service/main.py	
+@@ -0,0 +1,147 @@
++import os
++import sys
++from contextlib import asynccontextmanager
++from fastapi import FastAPI, Depends, HTTPException, status
++from sqlmodel import select
++from sqlmodel.ext.asyncio.session import AsyncSession
++
++# Ensure backend root is in sys.path
++sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
++
++from backend.config.config import settings
++from backend.config.database import init_db, get_async_session
++from backend.auth_service.models import User, UserCreate, UserRead, UserLogin, Token
++from backend.config.security import (
++    hash_password,
++    verify_password,
++    create_access_token,
++    get_current_user_payload
++)
++
++
++@asynccontextmanager
++async def lifespan(app: FastAPI):
++    # Async database initialization
++    await init_db()
++    yield
++
++
++app = FastAPI(
++    title=f"{settings.PROJECT_NAME} - Auth Service",
++    version="1.0.0",
++    lifespan=lifespan
++)
++
++
++@app.get("/health")
++async def health_check():
++    return {"status": "ok", "service": "auth_service", "debug": settings.DEBUG}
++
++
++@app.post("/api/v1/auth/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
++async def register(
++    user_in: UserCreate,
++    db: AsyncSession = Depends(get_async_session)
++):
++    # Check if username or email already exists asynchronously
++    stmt_username = select(User).where(User.username == user_in.username)
++    res_username = await db.exec(stmt_username)
++    if res_username.first():
++        raise HTTPException(status_code=400, detail="Username already registered.")
++
++    stmt_email = select(User).where(User.email == user_in.email)
++    res_email = await db.exec(stmt_email)
++    if res_email.first():
++        raise HTTPException(status_code=400, detail="Email already registered.")
++
++    db_user = User(
++        email=user_in.email,
++        username=user_in.username,
++        password=hash_password(user_in.password),
++        full_name=user_in.full_name,
++        is_admin=user_in.is_admin
++    )
++    db.add(db_user)
++    await db.commit()
++    await db.refresh(db_user)
++    return db_user
++
++
++@app.post("/api/v1/auth/login", response_model=Token)
++async def login(
++    credentials: UserLogin,
++    db: AsyncSession = Depends(get_async_session)
++):
++    stmt = select(User).where(
++        (User.username == credentials.username_or_email) |
++        (User.email == credentials.username_or_email)
++    )
++    res = await db.exec(stmt)
++    user = res.first()
++
++    if not user or not verify_password(credentials.password, user.password):
++        raise HTTPException(
++            status_code=status.HTTP_401_UNAUTHORIZED,
++            detail="Incorrect username/email or password."
++        )
++
++    if not user.is_active:
++        raise HTTPException(status_code=400, detail="Inactive user account.")
++
++    access_token = create_access_token(data={
++        "sub": str(user.id),
++        "username": user.username,
++        "email": user.email,
++        "is_admin": user.is_admin
++    })
++
++    return Token(
++        access_token=access_token,
++        user=UserRead(
++            id=user.id,
++            email=user.email,
++            username=user.username,
++            full_name=user.full_name,
++            is_active=user.is_active,
++            is_admin=user.is_admin
++        )
++    )
++
++
++@app.get("/api/v1/auth/me", response_model=UserRead)
++async def get_me(
++    payload: dict = Depends(get_current_user_payload),
++    db: AsyncSession = Depends(get_async_session)
++):
++    user_id = payload.get("user_id")
++    if user_id:
++        stmt = select(User).where(User.id == user_id)
++        res = await db.exec(stmt)
++        user = res.first()
++        if user:
++            return UserRead(
++                id=user.id,
++                email=user.email,
++                username=user.username,
++                full_name=user.full_name,
++                is_active=user.is_active,
++                is_admin=user.is_admin
++            )
++
++    # If user not found in DB but in DEBUG mode, return mock user
++    if settings.DEBUG:
++        return UserRead(
++            id=1,
++            email=payload.get("email", "admin@microshop.dev"),
++            username=payload.get("username", "debug_admin"),
++            full_name="Debug Admin User",
++            is_active=True,
++            is_admin=True
++        )
++
++    raise HTTPException(status_code=404, detail="User not found.")
++
++
++if __name__ == "__main__":
++    import uvicorn
++    uvicorn.run(app, host="0.0.0.0", port=settings.AUTH_SERVICE_PORT)
+diff --git a/backend copy/auth_service/models.py b/backend copy/auth_service/models.py
+new file mode 100644
+index 0000000..14bcd0c
+--- /dev/null
++++ b/backend copy/auth_service/models.py	
+@@ -0,0 +1,51 @@
++from typing import Optional
++from sqlmodel import SQLModel, Field
++from pydantic import BaseModel, EmailStr
++
++
++# ==========================================
++# Auth SQLModel Entity
++# ==========================================
++
++class User(SQLModel, table=True):
++    __tablename__ = "users"
++
++    id: Optional[int] = Field(default=None, primary_key=True)
++    email: str = Field(unique=True, index=True, nullable=False)
++    username: str = Field(unique=True, index=True, nullable=False)
++    password: str = Field(nullable=False)
++    full_name: Optional[str] = Field(default=None)
++    is_active: bool = Field(default=True)
++    is_admin: bool = Field(default=False)
++
++
++# ==========================================
++# Auth Pydantic Schemas / DTOs
++# ==========================================
++
++class UserCreate(BaseModel):
++    email: EmailStr
++    username: str
++    password: str
++    full_name: Optional[str] = None
++    is_admin: bool = False
++
++
++class UserRead(BaseModel):
++    id: int
++    email: str
++    username: str
++    full_name: Optional[str] = None
++    is_active: bool
++    is_admin: bool
++
++
++class UserLogin(BaseModel):
++    username_or_email: str
++    password: str
++
++
++class Token(BaseModel):
++    access_token: str
++    token_type: str = "bearer"
++    user: UserRead
+diff --git a/backend copy/auth_service/requirements.txt b/backend copy/auth_service/requirements.txt
+new file mode 100644
+index 0000000..b87482e
+--- /dev/null
++++ b/backend copy/auth_service/requirements.txt	
+@@ -0,0 +1,11 @@
++fastapi
++uvicorn[standard]
++sqlmodel
++sqlalchemy
++asyncpg
++aiosqlite
++pydantic
++pydantic-settings
++email-validator
++pyjwt
++passlib
+diff --git a/backend copy/config/__init__.py b/backend copy/config/__init__.py
+new file mode 100644
+index 0000000..2747c16
+--- /dev/null
++++ b/backend copy/config/__init__.py	
+@@ -0,0 +1,3 @@
++"""
++Shared package for MicroShop microservices.
++"""
+diff --git a/backend copy/config/config.py b/backend copy/config/config.py
+new file mode 100644
+index 0000000..a882007
+--- /dev/null
++++ b/backend copy/config/config.py	
+@@ -0,0 +1,37 @@
++from pydantic_settings import BaseSettings, SettingsConfigDict
++from typing import Optional
++
++
++class Settings(BaseSettings):
++    PROJECT_NAME: str = "MicroShop E-Commerce"
++    DEBUG: bool = True
++
++    # Security / JWT Configuration
++    SECRET_KEY: str = "super-secret-key-change-in-production"
++    ALGORITHM: str = "HS256"
++    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
++
++    # Database Configuration (supports sqlite+aiosqlite and postgresql+asyncpg)
++    DATABASE_URL: str = "sqlite+aiosqlite:///./microshop.db"
++
++    # Redis Configuration
++    REDIS_URL: str = "redis://localhost:6379/0"
++
++    # Gateway Routing & Internal Microservice URLs
++    GATEWAY_PORT: int = 8000
++    AUTH_SERVICE_PORT: int = 8001
++    PRODUCT_SERVICE_PORT: int = 8002
++    ORDER_SERVICE_PORT: int = 8003
++
++    AUTH_SERVICE_URL: str = "http://auth-service:8001"
++    PRODUCT_SERVICE_URL: str = "http://product-service:8002"
++    ORDER_SERVICE_URL: str = "http://order-service:8003"
++
++    model_config = SettingsConfigDict(
++        env_file=".env",
++        env_file_encoding="utf-8",
++        extra="ignore"
++    )
++
++
++settings = Settings()
+diff --git a/backend copy/config/database.py b/backend copy/config/database.py
+new file mode 100644
+index 0000000..111f788
+--- /dev/null
++++ b/backend copy/config/database.py	
+@@ -0,0 +1,41 @@
++from typing import AsyncGenerator
++from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
++from sqlmodel import SQLModel
++from sqlmodel.ext.asyncio.session import AsyncSession
++from backend.config.config import settings
++
++# Ensure SQLite engine connects properly with async driver and check_same_thread=False
++engine_kwargs = {"echo": settings.DEBUG}
++if settings.DATABASE_URL.startswith("sqlite"):
++    engine_kwargs["connect_args"] = {"check_same_thread": False}
++
++async_engine = create_async_engine(
++    settings.DATABASE_URL,
++    **engine_kwargs
++)
++
++async_session_maker = async_sessionmaker(
++    bind=async_engine,
++    class_=AsyncSession,
++    expire_on_commit=False,
++    autoflush=False
++)
++
++
++async def init_db() -> None:
++    """
++    Asynchronously initializes database tables using SQLModel metadata.
++    """
++    async with async_engine.begin() as conn:
++        await conn.run_sync(SQLModel.metadata.create_all)
++
++
++async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
++    """
++    FastAPI dependency for yielding async SQLModel database sessions.
++    """
++    async with async_session_maker() as session:
++        try:
++            yield session
++        finally:
++            await session.close()
+diff --git a/backend copy/config/redis.py b/backend copy/config/redis.py
+new file mode 100644
+index 0000000..b62838d
+--- /dev/null
++++ b/backend copy/config/redis.py	
+@@ -0,0 +1,24 @@
++import redis.asyncio as aioredis
++from typing import AsyncGenerator
++from backend.config.config import settings
++
++# Global async redis connection pool
++redis_client: aioredis.Redis = aioredis.from_url(
++    settings.REDIS_URL,
++    encoding="utf-8",
++    decode_responses=True
++)
++
++
++async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:
++    """
++    FastAPI dependency for accessing the async Redis client.
++    """
++    yield redis_client
++
++
++async def close_redis() -> None:
++    """
++    Closes the async Redis client connection pool gracefully.
++    """
++    await redis_client.close()
+diff --git a/backend copy/config/security.py b/backend copy/config/security.py
+new file mode 100644
+index 0000000..c213111
+--- /dev/null
++++ b/backend copy/config/security.py	
+@@ -0,0 +1,117 @@
++from datetime import datetime, timedelta, timezone
++from typing import Optional, Dict, Any
++import jwt
++from passlib.context import CryptContext
++from fastapi import HTTPException, Security, status, Depends
++from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
++from backend.config.config import settings
++
++pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
++security_bearer = HTTPBearer(auto_error=False)
++
++
++def hash_password(password: str) -> str:
++    """
++    Hashes a plain text password using bcrypt.
++    """
++    return pwd_context.hash(password)
++
++
++def verify_password(plain_password: str, hashed_password: str) -> bool:
++    """
++    Verifies a plain text password against a stored hash.
++    """
++    return pwd_context.verify(plain_password, hashed_password)
++
++
++def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
++    """
++    Creates a signed JWT access token.
++    """
++    to_encode = data.copy()
++    if expires_delta:
++        expire = datetime.now(timezone.utc) + expires_delta
++    else:
++        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
++    to_encode.update({"exp": expire})
++    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
++    return encoded_jwt
++
++
++async def get_current_user_payload(
++    credentials: Optional[HTTPAuthorizationCredentials] = Security(security_bearer)
++) -> Dict[str, Any]:
++    """
++    Validates JWT credentials with behavior dependent on DEBUG mode:
++    - If DEBUG=True: Allows mock dev tokens ('dev-mock-token' / 'dev-admin-token') or dev bypass fallback.
++    - If DEBUG=False: Strictly enforces valid JWT bearer token expiration, signature, and claims.
++    """
++    token = credentials.credentials if credentials else None
++
++    # Handle DEBUG=True dev authentication modes
++    if settings.DEBUG:
++        if token in ("dev-mock-token", "dev-admin-token", "mock-token"):
++            return {
++                "sub": "1",
++                "user_id": 1,
++                "username": "debug_admin",
++                "email": "admin@microshop.dev",
++                "is_admin": True
++            }
++
++    if not token:
++        if settings.DEBUG:
++            # In DEBUG mode, if no token provided, yield a default dev user
++            return {
++                "sub": "1",
++                "user_id": 1,
++                "username": "debug_admin",
++                "email": "admin@microshop.dev",
++                "is_admin": True
++            }
++        raise HTTPException(
++            status_code=status.HTTP_401_UNAUTHORIZED,
++            detail="Authentication credentials were not provided.",
++            headers={"WWW-Authenticate": "Bearer"},
++        )
++
++    try:
++        payload = jwt.decode(
++            token,
++            settings.SECRET_KEY,
++            algorithms=[settings.ALGORITHM]
++        )
++        user_id = payload.get("sub")
++        if user_id is None:
++            if settings.DEBUG:
++                return {"sub": "1", "user_id": 1, "username": "debug_admin", "email": "admin@microshop.dev", "is_admin": True}
++            raise HTTPException(
++                status_code=status.HTTP_401_UNAUTHORIZED,
++                detail="Invalid token payload.",
++                headers={"WWW-Authenticate": "Bearer"},
++            )
++        payload["user_id"] = int(user_id) if str(user_id).isdigit() else user_id
++        return payload
++    except jwt.PyJWTError as e:
++        if settings.DEBUG:
++            return {"sub": "1", "user_id": 1, "username": "debug_admin", "email": "admin@microshop.dev", "is_admin": True}
++        raise HTTPException(
++            status_code=status.HTTP_401_UNAUTHORIZED,
++            detail=f"Could not validate credentials: {str(e)}",
++            headers={"WWW-Authenticate": "Bearer"},
++        )
++
++
++async def get_current_admin_user_payload(
++    payload: Dict[str, Any] = Depends(get_current_user_payload)
++) -> Dict[str, Any]:
++    """
++    Enforces admin privileges on token payload.
++    """
++    if not payload.get("is_admin", False):
++        if not settings.DEBUG:
++            raise HTTPException(
++                status_code=status.HTTP_403_FORBIDDEN,
++                detail="Admin privileges required."
++            )
++    return payload
+diff --git a/backend copy/gateway/Dockerfile b/backend copy/gateway/Dockerfile
+new file mode 100644
+index 0000000..38df06c
+--- /dev/null
++++ b/backend copy/gateway/Dockerfile	
+@@ -0,0 +1,18 @@
++FROM python:3.11-slim
++
++WORKDIR /app
++
++ENV PYTHONDONTWRITEBYTECODE=1
++ENV PYTHONUNBUFFERED=1
++ENV PYTHONPATH=/app
++
++COPY backend/gateway/requirements.txt /app/requirements.txt
++RUN pip install --no-cache-dir -r requirements.txt
++
++COPY backend/config /app/backend/config
++COPY backend/gateway /app/backend/gateway
++COPY frontend /app/frontend
++
++EXPOSE 8000
++
++CMD ["python", "-m", "backend.gateway.main"]
+diff --git a/backend copy/gateway/main.py b/backend copy/gateway/main.py
+new file mode 100644
+index 0000000..fad524b
+--- /dev/null
++++ b/backend copy/gateway/main.py	
+@@ -0,0 +1,129 @@
++import os
++import sys
++from contextlib import asynccontextmanager
++import httpx
++from fastapi import FastAPI, Request, Response, HTTPException, status
++from fastapi.middleware.cors import CORSMiddleware
++from fastapi.staticfiles import StaticFiles
++
++# Ensure backend root is in sys.path
++sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
++
++from backend.config.config import settings
++
++# Global async HTTP client for proxying requests
++http_client: httpx.AsyncClient = None
++
++
++@asynccontextmanager
++async def lifespan(app: FastAPI):
++    global http_client
++    http_client = httpx.AsyncClient(timeout=30.0)
++    yield
++    await http_client.aclose()
++
++
++app = FastAPI(
++    title=f"{settings.PROJECT_NAME} - API Gateway (XHTTP)",
++    version="1.0.0",
++    lifespan=lifespan
++)
++
++# Enable CORS
++app.add_middleware(
++    CORSMiddleware,
++    allow_origins=["*"],
++    allow_credentials=True,
++    allow_methods=["*"],
++    allow_headers=["*"],
++)
++
++
++@app.get("/health")
++async def gateway_health():
++    """
++    Health check verifying Gateway and internal service reachability.
++    """
++    services_status = {}
++    service_map = {
++        "auth_service": settings.AUTH_SERVICE_URL,
++    }
++
++    for service_name, service_url in service_map.items():
++        try:
++            resp = await http_client.get(f"{service_url}/health", timeout=3.0)
++            if resp.status_code == 200:
++                services_status[service_name] = "healthy"
++            else:
++                services_status[service_name] = f"unhealthy (status {resp.status_code})"
++        except Exception as e:
++            services_status[service_name] = f"unreachable ({str(e)})"
++
++    return {
++        "gateway": "healthy",
++        "debug_mode": settings.DEBUG,
++        "services": services_status
++    }
++
++
++async def forward_request(request: Request, target_service_url: str) -> Response:
++    """
++    Asynchronous XHTTP request proxying and forwarding mechanism.
++    Routes request method, headers, query parameters, and body to internal microservices.
++    """
++    url_path = request.url.path
++    query_string = request.url.query
++    target_url = f"{target_service_url}{url_path}"
++    if query_string:
++        target_url = f"{target_url}?{query_string}"
++
++    headers = dict(request.headers)
++    headers.pop("host", None)
++
++    # Read body asynchronously
++    body = await request.body()
++
++    try:
++        req = http_client.build_request(
++            method=request.method,
++            url=target_url,
++            headers=headers,
++            content=body
++        )
++        res = await http_client.send(req, stream=True)
++
++        return Response(
++            content=await res.aread(),
++            status_code=res.status_code,
++            headers=dict(res.headers)
++        )
++    except httpx.RequestError as exc:
++        raise HTTPException(
++            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
++            detail=f"Service proxy error to {target_service_url}: {str(exc)}"
++        )
++
++
++# ==========================================
++# Route Handlers for Gateway
++# ==========================================
++
++@app.api_route("/api/v1/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
++async def route_auth(request: Request, path: str):
++    return await forward_request(request, settings.AUTH_SERVICE_URL)
++
++
++@app.api_route("/api/v1/auth", methods=["GET", "POST", "OPTIONS"])
++async def route_auth_root(request: Request):
++    return await forward_request(request, settings.AUTH_SERVICE_URL)
++
++
++# Mount frontend static directory if exists
++frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend"))
++if os.path.exists(frontend_dir):
++    app.mount("/shop", StaticFiles(directory=frontend_dir, html=True), name="frontend")
++
++
++if __name__ == "__main__":
++    import uvicorn
++    uvicorn.run(app, host="0.0.0.0", port=settings.GATEWAY_PORT)
+diff --git a/backend copy/gateway/requirements.txt b/backend copy/gateway/requirements.txt
+new file mode 100644
+index 0000000..afd77ea
+--- /dev/null
++++ b/backend copy/gateway/requirements.txt	
+@@ -0,0 +1,5 @@
++fastapi
++uvicorn[standard]
++httpx
++pydantic
++pydantic-settings
+diff --git a/backend/gateway/main.py b/backend/gateway/main.py
+index e173f1d..9062f1a 100644
+--- a/backend/gateway/main.py
++++ b/backend/gateway/main.py
+@@ -68,12 +68,22 @@ async def route_auth(request: Request, path: str) -> Response:
+     return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
+ 
+ 
++@app.api_route("/api/v1/auth", methods=["GET", "POST", "OPTIONS"])
++async def route_auth_root(request: Request) -> Response:
++    return await gateway_network.forward_request(request, settings.AUTH_SERVICE_URL)
++
++
+ # Catalogue Service Routing
+ @app.api_route("/api/v1/catalogue/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
+ async def route_catalogue(request: Request, path: str) -> Response:
+     return await gateway_network.forward_request(request, settings.CATALOGUE_SERVICE_URL)
+ 
+ 
++@app.api_route("/api/v1/catalogue", methods=["GET", "POST", "OPTIONS"])
++async def route_catalogue_root(request: Request) -> Response:
++    return await gateway_network.forward_request(request, settings.CATALOGUE_SERVICE_URL)
++
++
+ # Mount frontend static directory if exists
+ frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend"))
+ if os.path.exists(frontend_dir):
+diff --git a/deployments/docker-compose.yml b/deployments/docker-compose.yml
+index b2d5492..f4ae921 100644
+--- a/deployments/docker-compose.yml
++++ b/deployments/docker-compose.yml
+@@ -3,13 +3,14 @@ version: "3.8"
+ networks:
+   microshop-net:
+     driver: bridge
++    internal: false # Allows gateway to communicate externally while keeping internal services isolated
+ 
+ volumes:
+   postgres_data:
+   redis_data:
+ 
+ services:
+-  # Local Development Database
++  # Internal Database - No host port exposure
+   postgres:
+     image: postgres:17.5-alpine3.22
+     container_name: microshop-postgres
+@@ -18,8 +19,6 @@ services:
+       POSTGRES_USER: ${POSTGRES_USER:-micro_user}
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-micro_pass}
+       POSTGRES_DB: ${POSTGRES_DB:-microshop_db}
+-    ports:
+-      - "5432:5432"
+     volumes:
+       - postgres_data:/var/lib/postgresql/data
+     networks:
+@@ -30,13 +29,11 @@ services:
+       timeout: 5s
+       retries: 5
+ 
+-  # Local Development Redis Cache
++  # Internal Cache - No host port exposure
+   redis:
+     image: redis:8.4-alpine
+     container_name: microshop-redis
+     restart: always
+-    ports:
+-      - "6379:6379"
+     volumes:
+       - redis_data:/data
+     networks:
+@@ -47,15 +44,13 @@ services:
+       timeout: 5s
+       retries: 5
+ 
+-  # Auth Microservice (Docs: http://localhost:8001/docs)
++  # Internal Auth Microservice - No host port exposure
+   auth-service:
+     build:
+       context: ..
+       dockerfile: backend/auth_service/Dockerfile
+     container_name: microshop-auth-service
+     restart: always
+-    ports:
+-      - "8001:8001"
+     environment:
+       - DEBUG=${DEBUG:-True}
+       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
+@@ -69,15 +64,13 @@ services:
+     networks:
+       - microshop-net
+ 
+-  # Catalogue Microservice (Docs: http://localhost:8002/docs)
++  # Internal Catalogue Microservice - No host port exposure
+   catalogue-service:
+     build:
+       context: ..
+       dockerfile: backend/catalogue/Dockerfile
+     container_name: microshop-catalogue-service
+     restart: always
+-    ports:
+-      - "8002:8002"
+     environment:
+       - DEBUG=${DEBUG:-True}
+       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
+@@ -91,7 +84,7 @@ services:
+     networks:
+       - microshop-net
+ 
+-  # Public API Gateway (Docs: http://localhost:8000/docs)
++  # Public API Gateway - ONLY service exposing port 8000 to the outside world
+   gateway:
+     build:
+       context: ..
+diff --git a/frontend/src/App.css b/frontend/src/App.css
+index 12ecf41..a0a03ac 100644
+--- a/frontend/src/App.css
++++ b/frontend/src/App.css
+@@ -1,5 +1,4 @@
+ body{
+     margin: 0;
+-    background-color: var(--bg-base);
+-    font-family: "Vazirmatn", sans-serif;
++    background-color: var(--background);
+ }
+\ No newline at end of file
+diff --git a/frontend/src/App.jsx b/frontend/src/App.jsx
+index fe59dcc..98dc932 100644
+--- a/frontend/src/App.jsx
++++ b/frontend/src/App.jsx
+@@ -1,6 +1,9 @@
+ import React, { Component } from 'react'
+ import "./App.css"
+ import Header from './component/header/header'
++import ParrentProduct from './component/product/parrentProduct'
++import Footer from './component/footer/footer'
++
+ 
+ 
+ export default class App extends Component {
+@@ -8,6 +11,8 @@ export default class App extends Component {
+     return (
+       <div>
+         <Header></Header>
++        <ParrentProduct></ParrentProduct>
++        <Footer></Footer>
+       </div>
+     )
+   }
+diff --git a/frontend/src/assets/picture/product.png b/frontend/src/assets/picture/product.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..68804066423b44298bf7d644040bc4b21404ba0f
+GIT binary patch
+literal 31133
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/frontend/src/component/footer/footer.css b/frontend/src/component/footer/footer.css
+new file mode 100644
+index 0000000..c3683bc
+--- /dev/null
++++ b/frontend/src/component/footer/footer.css
+@@ -0,0 +1,89 @@
++.footer-container{
++  max-width: 1400px;
++  margin: 0 auto;
++  display: flex;
++  gap: 50px;
++  align-items: center;
++  justify-content: space-evenly;
++}
++.footer-container > div{
++  position: relative;
++  padding: 0 30px;
++}
++.footer-container > div:not(:last-child)::after{
++  content: "";
++
++  position: absolute;
++  right: 0;
++  top: 50%;
++  transform: translateY(-50%);
++
++  width: 1px;
++  height: 100px;
++
++  background: var(--base-text);
++}
++.footer-h2{
++  width: 100%;
++  margin: 0;
++  text-align: right;
++  font-weight: bold;
++  color: var(--base-text);
++}
++.all-footer-item{
++  display: flex;
++  flex-direction: column;
++  text-align: right;
++}
++.all-footer-item a{
++  text-decoration: none;
++  color: var(--base-text);
++}
++/* logo and site name */
++.name-logo-bar {
++  display: flex;
++  align-items: center;
++  flex-direction: column;
++  gap: 10px;
++
++  color: var(--base-text);
++}
++.footer-logo-icon {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  justify-content: center;
++  position: relative;
++
++  font-size: 40px;
++
++  color: #eed9b9;
++}
++.logo {
++  margin: 0;
++  position: absolute;
++  left: -40px;
++  }
++.footer-logo-text {
++    font-size: 20px;
++    font-weight: 700;
++    word-spacing: 3px;
++}
++
++.call-info{
++  line-height: 2;
++  color: var(--base-text);
++}
++.call-info div{
++  width: 100%;
++}
++.service{
++  line-height: 1.5;
++}
++.accessibility{
++  line-height: 1.2;
++}
++.accessibility-h2{
++  padding-bottom: 15px;
++}
++
+diff --git a/frontend/src/component/footer/footer.jsx b/frontend/src/component/footer/footer.jsx
+new file mode 100644
+index 0000000..78160e9
+--- /dev/null
++++ b/frontend/src/component/footer/footer.jsx
+@@ -0,0 +1,46 @@
++import React, { Component } from 'react'
++import "./footer.css"
++
++export default class Footer extends Component {
++    render() {
++        return (
++            <div>
++                <div className='footer-container'>
++                    <div className='send-email'></div>
++                    <div className='accessibility all-footer-item'>
++                        <h2 className='footer-h2 accessibility-h2'>دسترسی سریع</h2>
++                        <div><a href="">کلکسیون عطر ها</a></div>
++                        <div><a href="">هدیه</a></div>
++                        <div><a href="">سوالات متداول</a></div>
++                        <div><a href="">شرایط و قوانین</a></div>
++                        <div><a href="">حریم خصوصی</a></div>
++                    </div>
++                    <div className='service all-footer-item'>
++                        <h2 className='footer-h2'>خدمات مشتریان</h2>
++                        <div><a href="">تماس با ما</a></div>
++                        <div><a href="">پیگیری سفارش</a></div>
++                        <div><a href="">بازگشت کالا</a></div>
++                        <div><a href="">راهنمای خرید</a></div>
++                    </div>
++                    <div className='call-info all-footer-item'>
++                        <h2 className='footer-h2'>اطلاعات نماس</h2>
++                        <div className='call'> +98 939 - 118 - 0646</div>
++                        <div className='email'>mojib0646yousefi@gmail.com</div>
++                        <div className='location'>بندرعباس هرمزگان</div>
++                    </div>
++                    <div className='name-logo-bar'>
++                        <div className="footer-logo-icon">
++                            <p className='logo'>✽</p>
++                            <span>Aura</span>
++                            <span>Étoile</span>
++                        </div>
++
++                        <div className="footer-logo-text">
++                            <p>تجربه لوکس ترین عطر ها</p>
++                        </div>
++                    </div>
++                </div>
++            </div>
++        )
++    }
++}
+diff --git a/frontend/src/component/header/header.css b/frontend/src/component/header/header.css
+index 967ada9..c7f2b08 100644
+--- a/frontend/src/component/header/header.css
++++ b/frontend/src/component/header/header.css
+@@ -1,74 +1,119 @@
+ .header-container {
+-  max-width: 1400px;
+-  height: 560px;
+-
+-  background-image: url("../../assets/picture/headerimage.png");
+-  background-size: 100% auto;
+-  background-position: 80% center;
+-  background-repeat: no-repeat;
+-
+-  margin: 20px auto 0;
+-
+-  border-radius: 20px;
++  max-width: 1250px;
++  height: 680px;
++  margin: 0 auto;
++  padding: 0 !important;
++  background: var(--background);
+ 
+   display: flex;
+   align-items: center;
+   justify-content: flex-end;
+ }
+ 
+-.header-img {
+-  flex: 1;
+-  max-width: 60%;
+-}
+-
+-.header-img img {
+-  display: block;
+-  width: 100%;
+-  max-width: 100%;
+-  height: auto;
+-}
+ /* HEADER TEXT */
+ .header-content {
+-  width: 40%;
+-  flex: 0 0 40%;
++  display: flex;
++  flex-direction: column;
++  width: 50%;
++  direction: rtl;
+ 
+-  margin-right: 8%;
++}
++.header-content span {
++  display: flex;
++  align-items: center;
++  gap: 12px;
+ 
+-  color: var(--base-text);
++  color: var(--primary);
++  font-weight: 500;
+ 
+-  text-align: center;
+-  letter-spacing: 5px;
++}
++.header-content span::before{
++  content: "";
++  width: 40px;
++  height: 1px;
++  
++  background: var(--primary);
++  flex-shrink: 0;
+ }
+ .header-content h1 {
+-  font-size: 42px;
++  font-size: 48px;
+   font-weight: 700;
+-  line-height: 1.6;
++  line-height: 125%;
++
++
++  color: var(--text);
++
++  margin: 24px 0;
+ }
+ .header-content p {
+-  font-size: 30px;
+-  font-weight: 700;
+-}
+-.header-content span {
+-  color: #d53e0f;
+-}
++  max-width: 450px;
+ 
++  font-size: 18px;
++  line-height: 180%;
++  font-weight: 400;
++
++  color: var(--primary);
++
++  margin: 0 0 28px;
++}
+ .header-button {
+-  background: linear-gradient(90deg, #5e0006, #9b0f06);
+-  color: var(--base-text);
++ max-width: fit-content;
++
++  background: var(--primary);
++  color: var(--background);
+ 
+   border: none;
+-  border-radius: 10px;
++  border-radius: 4px;
+ 
+-  padding: 13px 35px;
++  padding: 12px 28px;
+ 
+   font-weight: 500;
+   font-size: 20px;
+ 
+   cursor: pointer;
+ 
+-  transition: all 2;
++  transition: all 2 ease;
+ }
+ 
+ .header-button:hover {
+-  transform: translateY(-2px);
++  background: var(--accent);
++  color: var(--background);
++}
++
++/* 
++==================================================
++MOBILE HEADER
++==================================================
++*/
++.mobile-header {
++  display: flex;
++  justify-content: center;
++  flex-direction: column;
++}
++
++.navbar-logo-mobile {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++
++  background-color: #5e0006;
++
++  gap: 8px;
++  padding: 10px;
++
++  color: var(--base-text);
++
++  min-width: 160px;
++
++  border-bottom-left-radius: 10px;
++  border-bottom-right-radius: 10px;
++}
++.mobile-header-image {
++  width: 100%;
++  height: auto;
++  aspect-ratio: 1200 / 600;
++
++  background: url(../../assets/picture/headerimage.png);
++  background-size: 100% auto;
++  background-repeat: no-repeat;
+ }
+diff --git a/frontend/src/component/header/header.jsx b/frontend/src/component/header/header.jsx
+index 4387210..a8ad7f9 100644
+--- a/frontend/src/component/header/header.jsx
++++ b/frontend/src/component/header/header.jsx
+@@ -3,20 +3,75 @@ import './header.css'
+ import Navbar from './navbar/navbar'
+ 
+ export default class Header extends Component {
++  constructor(props) {
++    super(props);
++
++    this.state = {
++      isMobile: window.innerWidth <= 900
++    };
++  }
++
++  componentDidMount() {
++    window.addEventListener("resize", this.handleResize);
++  }
++
++  componentWillUnmount() {
++    window.removeEventListener("resize", this.handleResize);
++  }
++
++  handleResize = () => {
++    this.setState({
++      isMobile: window.innerWidth <= 900
++    });
++  };
+   render() {
+     return (
+-      <div>
+-        <Navbar></Navbar>
+-        <div className='header-container'>
+-          <div className='header-content'>
+-            <h1>تجربه <span>لوکس ترین</span> عطر ها </h1>
++      <>
++        {this.state.isMobile ? (
++          // mobile
++          <>
++            <div className='mobile-header'>
++              <div className="navbar-logo-mobile">
++                <div className="logo-icon">
++                  ✽
++                </div>
++
++                <div className="logo-text">
++                  <span>Aura</span>
++                  <span>Étoile</span>
++                </div>
++              </div>
++              <div className='mobile-header-image'></div>
++              <Navbar></Navbar>
++            </div>
++          </>
++        ) : (
+ 
+-            <p>شاهکار هایی از دنیای عطر سازی</p>
++          <div>
++            <Navbar></Navbar>
++            <div className='header-container container'>
++              <div className='header-content'>
+ 
+-            <button className='header-button'>مشاهده کلکسیون </button>
++                <span>مجموعه سلطنتی فرانسه و شرق</span>
++                
++                <h1>
++                  عطرهای اصل و خاص
++                  <br />
++                  تجلی شکوه و اصالت
++                </h1>
++
++                <p>
++                  کشف رایحه‌های ناب و نفیس که هویت شما را به تصویر می‌کشند.
++                  با نوآر اسنس، امضای بویایی منحصر‌به‌فرد خود را در میان برترین برندهای
++                  نیش جهان بیابید.
++                </p>
++                <button className='header-button'>مشاهده کلکسیون </button>
++              </div>
++            </div>
+           </div>
+-        </div>
+-      </div>
++
++        )}
++      </>
+     )
+   }
+ }
+diff --git a/frontend/src/component/header/navbar/navbar.css b/frontend/src/component/header/navbar/navbar.css
+index 8af1b16..05d3d2f 100644
+--- a/frontend/src/component/header/navbar/navbar.css
++++ b/frontend/src/component/header/navbar/navbar.css
+@@ -27,6 +27,7 @@
+   height: 64px;
+ 
+   margin: 0 auto;
++  margin-top: 10px !important;
+ 
+   padding: 0 20px;
+ 
+@@ -36,11 +37,9 @@
+   align-items: center;
+   justify-content: space-between;
+ 
+-    background: rgba(94, 0, 6, 0.45);
+-    backdrop-filter: blur(10px);
++  background: #2B0003;
+ 
+-    border: 1px solid rgba(238, 217, 185, 0.15);
+-    border-radius: 20px; 
++  border-radius: 20px;
+ 
+   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+ }
+@@ -52,10 +51,11 @@
+ .navbar-logo {
+   display: flex;
+   align-items: center;
++  justify-content: center;
+ 
+   gap: 8px;
+ 
+-  color: var(--base-text);
++  color: var(--text);
+ 
+   min-width: 160px;
+ }
+@@ -68,13 +68,13 @@
+   align-items: center;
+   justify-content: center;
+ 
+-  border: 1px solid rgba(238, 217, 185, 0.6);
++  border: 1px solid var(--text);
+ 
+   border-radius: 50%;
+ 
+   font-size: 22px;
+ 
+-  color: #eed9b9;
++  color: var(--text);
+ }
+ 
+ .logo-text {
+@@ -116,7 +116,7 @@
+ .navbar-menu a {
+   position: relative;
+ 
+-  color: var(--base-text);
++  color: var(--text);
+ 
+   text-decoration: none;
+ 
+@@ -136,13 +136,13 @@
+   width: 0;
+   height: 1px;
+ 
+-  background: #d53e0f;
++  background: var(--accent);
+ 
+   transition: width 0.3s ease;
+ }
+ 
+ .navbar-menu a:hover {
+-  color: var(--base-text);
++  color: var(--primary);
+ }
+ 
+ .navbar-menu a:hover::after {
+@@ -156,8 +156,8 @@
+ .navbar-actions {
+   display: flex;
+   align-items: center;
++  gap: 10px;
+ 
+-  gap: 20px;
+ 
+   min-width: 160px;
+ 
+@@ -165,19 +165,24 @@
+ }
+ 
+ .signin {
+-  color: var(--base-text);
++
++  color: var(--primary); 
++
++  padding: 5px 10px;
++  border-radius: 20px;
+ 
+   text-decoration: none;
+ 
+   font-family: Arial, sans-serif;
+ 
+-  font-size: 12px;
++  font-size: 14px;
+ 
+   transition: 0.3s;
+ }
+ 
+ .signin:hover {
+-  color: var(--base-text);
++  color: var(--background);
++  background-color: var(--accent);
+ }
+ 
+ /* =========================
+@@ -191,9 +196,9 @@
+ 
+   border-radius: 12px;
+ 
+-  background: var(--base-text);
++  background: var(--primary);
+ 
+-  color: var(--bg-base);
++  color: var(--background);
+ 
+   font-family: inherit;
+ 
+@@ -209,11 +214,32 @@
+ }
+ 
+ .start-btn:hover {
+-  transform: translateY(-2px);
+-
+-  box-shadow: 0 8px 20px rgba(213, 62, 15, 0.35);
++  background: var(--accent);
+ }
+ 
+ .start-btn:active {
+   transform: translateY(0);
+ }
++/* ==========================================
++MOBILE NAVBAR
++==============================================*/
++
++.mobile-navbar {
++  width: 100%;
++  position: fixed;
++  bottom: 0;
++  padding: 10px 0;
++
++  display: flex;
++  justify-content: center;
++  gap: 30px;
++
++  background-color: #5e0006;
++
++  z-index: 1000;
++}
++
++.mobile-navbar-item a {
++  text-decoration: none;
++  color: var(--base-text);
++}
+diff --git a/frontend/src/component/header/navbar/navbar.jsx b/frontend/src/component/header/navbar/navbar.jsx
+index 698243f..dd3c6b8 100644
+--- a/frontend/src/component/header/navbar/navbar.jsx
++++ b/frontend/src/component/header/navbar/navbar.jsx
+@@ -1,27 +1,65 @@
+-import React, { Component } from 'react'
++import React, { Component, useState, useEffect } from 'react'
+ import "./navbar.css"
+ 
+ export default class Navbar extends Component {
++    constructor(props) {
++        super(props);
++
++        this.state = {
++            isMobile: window.innerWidth <= 900
++        };
++    }
++
++    componentDidMount() {
++        window.addEventListener("resize", this.handleResize);
++    }
++
++    componentWillUnmount() {
++        window.removeEventListener("resize", this.handleResize);
++    }
++
++    handleResize = () => {
++        this.setState({
++            isMobile: window.innerWidth <= 900
++        });
++    };
++
++
+     render() {
+         return (
+             <>
+-                <nav className="navbar">
++                {this.state.isMobile ? (
++                    <div className='mobile-navbar'>
++                        <div className="mobile-navbar-item">
++                            <a href="">خانه</a>
++                        </div>
++                        <div className="mobile-navbar-item">
++                            <a href="">کلکسیون</a>
++                        </div>
++                        <div className="mobile-navbar-item">
++                            <a href="">سبد خرید</a>
++                        </div>
++                        <div className="mobile-navbar-item">
++                            <a href="">حساب کاربری</a>
++                        </div>
++                        <div className="mobile-navbar-item">
++                            <a href="">منو</a>
++                        </div>
++                    </div>) : (
++                    // desktop navbar
+                     <div className="navbar-container">
+ 
+-    
+-                        <div className="navbar-logo">
+-                            <div className="logo-icon">
+-                                ✽
+-                            </div>
++                        <div className="navbar-actions">
++                            <button className="start-btn">
++                                شروع کنید
++                            </button>
+ 
+-                            <div className="logo-text">
+-                                <span>Aura</span>
+-                                <span>Étoile</span>
+-                            </div>
+-                        </div>
++                            <a href="#" className="signin">
++                                Sign in
++                            </a>
+ 
++                        </div>
+ 
+-                        
+                         <div className="navbar-menu">
+                             <a href="#">تماس با ما</a>
+                             <a href="#">درباره ما</a>
+@@ -30,19 +68,19 @@ export default class Navbar extends Component {
+                         </div>
+ 
+ 
+-                        
+-                        <div className="navbar-actions">
+-                            <a href="#" className="signin">
+-                                Sign in
+-                            </a>
++                        <div className="navbar-logo">
++                            <div className="logo-icon">
++                                ✽
++                            </div>
+ 
+-                            <button className="start-btn">
+-                                شروع کنید
+-                            </button>
++                            <div className="logo-text">
++                                <span>Aura</span>
++                                <span>Étoile</span>
++                            </div>
+                         </div>
+ 
+                     </div>
+-                </nav>
++                )}
+             </>
+         )
+     }
+diff --git a/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.css b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.css
+new file mode 100644
+index 0000000..e03f8f1
+--- /dev/null
++++ b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.css
+@@ -0,0 +1,74 @@
++.best-seal-product {
++  width: 1250px;
++  margin: 0 auto;
++}
++
++.best-seal-product .swiper {
++  width: 100%;
++}
++
++.best-seal-product .swiper-slide {
++  display: flex;
++  justify-content: center;
++}
++.best-seal-title {
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  width: 1250px;
++  margin: 0 auto;
++}
++.right-text {
++  text-align: right;
++}
++.right-text span {
++  display: flex;
++  align-items: center;
++  gap: 12px;
++  direction: rtl;
++
++  color: var(--accent);
++
++  font-weight: 500;
++}
++.right-text span::before {
++  content: "";
++  width: 40px;
++  height: 1px;
++  background-color: var(--accent);
++  flex-shrink: 0;
++}
++.right-text h2 {
++  color: var(--text);
++}
++.whach-all a {
++  text-decoration: none;
++  color: var(--accent);
++  font-size: 14px;
++}
++@media (max-width: 900px) {
++  .best-seel-product {
++    display: flex;
++    gap: 16px;
++
++    overflow-x: auto;
++    padding: 0 20px 15px;
++
++    scroll-snap-type: x mandatory;
++    scrollbar-width: none;
++  }
++  .best-seel-product::-webkit-scrollbar {
++    display: none;
++  }
++  .bestseals-tltle {
++    display: flex;
++    align-items: center;
++    gap: 12px;
++  }
++  .bestseals-tltle::after,
++  .bestseals-tltle::before {
++    content: "";
++    height: 2px;
++    flex: 1;
++  }
++}
+diff --git a/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.jsx b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.jsx
+new file mode 100644
+index 0000000..177a978
+--- /dev/null
++++ b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.jsx
+@@ -0,0 +1,92 @@
++import './bestSeelsProduct.css'
++import ProductCart from '../productCart/productCart'
++import productimage from "../../../assets/picture/product.png"
++
++import React, { Component } from 'react'
++
++import { Autoplay } from 'swiper/modules'
++import { Swiper, SwiperSlide } from 'swiper/react'
++import 'swiper/css'
++
++export default class BestSeelsProduct extends Component {
++    constructor(props) {
++        super(props)
++        this.state = {
++            products: [
++                {
++                    id: 1,
++                    perfumName: "svage elexir",
++                    priceforBSP: "4,500,000",
++                    ProductImage: productimage,
++                },
++                {
++                    id: 2,
++                    perfumName: "creed aventus",
++                    priceforBSP: "6,000,000",
++                    ProductImage: productimage,
++                },
++                {
++                    id: 3,
++                    perfumName: "blue chanel",
++                    priceforBSP: "3,650,000",
++                    ProductImage: productimage,
++                },
++                {
++                    id: 4,
++                    perfumName: "floris",
++                    priceforBSP: "8,200,000",
++                    ProductImage: productimage,
++                },
++                {
++                    id: 5,
++                    perfumName: "almas",
++                    priceforBSP: "7,000,000",
++                    ProductImage: productimage,
++                },
++                {
++                    id: 6,
++                    perfumName: "test",
++                    priceforBSP: "1,000,000",
++                    ProductImage: productimage,
++                }
++            ],
++            slide: 0
++        }
++    }
++    render() {
++        return (
++            <div>
++                <div className='best-seal-title'>
++
++                    <p className='whach-all'><a href="">← مشاهده همه</a></p>
++
++                    <div className='right-text'>
++                        <span>محبوب ترین رایحه ها</span>
++                        <h2>پرفروش ترین محصولات</h2>
++                    </div>
++                </div>
++                <div className='best-seal-product'>
++                    <Swiper
++                        modules={[Autoplay]}
++                        slidesPerView={5}
++                        spaceBetween={20}
++                        autoplay={{
++                            delay: 2000,
++                            pauseOnMouseEnter: true,
++                            disableOnInteraction: false
++                        }}
++                    >
++                        {this.state.products.map(perf =>
++                            <SwiperSlide key={perf.id}>
++                                <ProductCart
++                                    {...perf}
++                                />
++                            </SwiperSlide>
++                        )}
++
++                    </Swiper>
++                </div>
++            </div>
++        )
++    }
++}
+diff --git a/frontend/src/component/product/offerProduct/offerProduct.css b/frontend/src/component/product/offerProduct/offerProduct.css
+new file mode 100644
+index 0000000..5323ab6
+--- /dev/null
++++ b/frontend/src/component/product/offerProduct/offerProduct.css
+@@ -0,0 +1,72 @@
++/* =========================
++   OFFER TITLE
++========================= */
++.offer-title{
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  width: 1250px;
++  margin: 30px auto;
++}
++.right-txt{
++  text-align: right;
++}
++.right-txt h2{
++  color: var(--text);
++}
++.right-txt span {
++  display: flex;
++  align-items: center;
++  gap: 12px;
++  direction: rtl;
++
++  color: var(--accent);
++
++  font-weight: 500;
++}
++.right-txt span::before {
++  content: "";
++  width: 40px;
++  height: 1px;
++  background-color: var(--accent);
++  flex-shrink: 0;
++}
++.offer-product {
++  width: 1250px;
++  margin: 0 auto;
++}
++.offer-product .swiper {
++  width: 100%;
++}
++.offer-product .swiper-slide {
++  display: flex;
++  justify-content: center;
++}
++@media (max-width: 900px) {
++  .offerProductCart {
++    display: flex;
++    gap: 16px;
++
++    overflow-x: auto;
++    padding: 0 20px 15px;
++
++    scroll-snap-type: x mandatory;
++
++    scrollbar-width: none;
++  }
++  .offerProductCart::-webkit-scrollbar {
++    display: none;
++  }
++  .offertitle {
++    display: flex;
++    align-items: center;
++    gap: 12px;
++    font-size: 20px;
++  }
++  .offertitle::before,
++  .offertitle::after {
++    content: "";
++    height: 2px;
++    flex: 1;
++  }
++}
+diff --git a/frontend/src/component/product/offerProduct/offerProduct.jsx b/frontend/src/component/product/offerProduct/offerProduct.jsx
+new file mode 100644
+index 0000000..8d8845a
+--- /dev/null
++++ b/frontend/src/component/product/offerProduct/offerProduct.jsx
+@@ -0,0 +1,118 @@
++import React, { Component } from 'react'
++import "./offerProduct.css"
++import ProductCart from '../productCart/productCart'
++
++import productimage from "../../../assets/picture/product.png"
++
++import { Autoplay } from 'swiper/modules'
++import { Swiper, SwiperSlide } from 'swiper/react'
++import 'swiper/css'
++
++export default class OfferProduct extends Component {
++    constructor(props) {
++        super(props)
++
++        this.state = {
++            products: [
++                {
++                    id: 1,
++                    perfumName: "svage elexir",
++                    price: "4,500,000",
++                    ProductImage: productimage,
++                    priceAfteroff: "4,000,000"
++                },
++                {
++                    id: 2,
++                    perfumName: "creed aventus",
++                    price: "6,000,000",
++                    ProductImage: productimage,
++                    priceAfteroff: "5,400,000"
++                },
++                {
++                    id: 3,
++                    perfumName: "blue chanel",
++                    price: "3,650,000",
++                    ProductImage: productimage,
++                    priceAfteroff: "800,000"
++                },
++                {
++                    id: 4,
++                    perfumName: "floris",
++                    price: "8,200,000",
++                    ProductImage: productimage,
++                    priceAfteroff: "6,500,000"
++                },
++                {
++                    id: 5,
++                    perfumName: "almas",
++                    price: "7,000,000",
++                    ProductImage: productimage,
++                    priceAfteroff: "4,000,000"
++                },
++                {
++                    id: 6,
++                    perfumName: "test",
++                    priceforBSP: "1,000,000",
++                    ProductImage: productimage,
++                }
++            ],
++
++            slide: 0
++        }
++    }
++
++    nextSlide = () => {
++        this.setState(prevState => ({
++            slide: Math.min(
++                prevState.slide + 1,
++                this.state.products.length - 4
++            )
++        }))
++    }
++
++    prevSlide = () => {
++        this.setState(prevState => ({
++            slide: Math.max(
++                prevState.slide - 1,
++                0
++            )
++        }))
++    }
++
++    render() {
++        return (
++            <div>
++
++                <div className='offer-title'>
++
++                    <p className='whach-all'><a href="">← مشاهده همه</a></p>
++
++                    <div className='right-txt'>
++                        <span>فرصت محدود برای خرید لوکس</span>
++                        <h2>محصولات با بیشترین تخفیف</h2>
++                    </div>
++                </div>
++                <div className='offer-product'>
++                    <Swiper
++                        modules={[Autoplay]}
++                        slidesPerView={5}
++                        spaceBetween={20}
++                        autoplay={{
++                            delay: 2000,
++                            pauseOnMouseEnter: true,
++                            disableOnInteraction: false
++                        }}
++                    >
++                        {this.state.products.map(perf =>
++                            <SwiperSlide key={perf.id}>
++                                <ProductCart
++                                    {...perf}
++                                />
++                            </SwiperSlide>
++                        )}
++                    </Swiper>
++                </div>
++            </div>
++        )
++    }
++}
+\ No newline at end of file
+diff --git a/frontend/src/component/product/parrentProduct.jsx b/frontend/src/component/product/parrentProduct.jsx
+new file mode 100644
+index 0000000..458e95c
+--- /dev/null
++++ b/frontend/src/component/product/parrentProduct.jsx
+@@ -0,0 +1,14 @@
++import React, { Component } from 'react'
++import OfferProduct from './offerProduct/offerProduct'
++import BestSeelsProduct from "./bestSeelsProduct/bestSeelsProduct"
++
++export default class ParrentProduct extends Component {
++  render() {
++    return (
++      <div>
++        <BestSeelsProduct></BestSeelsProduct>
++        <OfferProduct></OfferProduct>
++      </div>
++    )
++  }
++}
+diff --git a/frontend/src/component/product/productCart/productCart.css b/frontend/src/component/product/productCart/productCart.css
+new file mode 100644
+index 0000000..5e16a73
+--- /dev/null
++++ b/frontend/src/component/product/productCart/productCart.css
+@@ -0,0 +1,144 @@
++.ProductCart {
++  width: 238px;
++
++  background-color: #2B0003;
++
++  border-radius: 20px;
++  overflow: hidden;
++
++  display: flex;
++  flex-direction: column;
++
++  direction: rtl;
++  flex-shrink: 0;
++
++  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
++}
++
++/* IMAGE */
++
++.product-image {
++  width: 100%;
++  height: 210px;
++
++  overflow: hidden;
++}
++
++.product-image img {
++  width: 100%;
++  height: 100%;
++
++  object-fit: cover;
++  display: block;
++}
++
++/* PRODUCT TITLE */
++
++.perfum-title {
++  margin: 18px 20px 6px;
++
++  color: var(--primary);
++
++  font-size: 20px;
++  font-weight: 700;
++
++  text-align: right;
++}
++
++/* DESCRIPTION */
++
++.perfum-discription {
++  margin: 0 20px 15px;
++
++  color: var(--text);
++
++  font-size: 14px;
++  line-height: 1.7;
++
++  text-align: right;
++}
++
++/* PRICE + BUTTON */
++
++.product-text {
++  display: flex;
++  align-items: center;
++  
++
++  gap: 25px;
++
++  padding: 0 16px 16px;
++}
++
++/* NORMAL PRICE */
++
++.BSPprice {
++  margin: 0;
++
++  color: var(--primary);
++
++  font-size: 15px;
++  font-weight: 600;
++
++  white-space: nowrap;
++}
++
++/* OFFER PRICE */
++
++.offerPrice {
++  display: flex;
++  flex-direction: column;
++
++  align-items: flex-start;
++  gap: 2px;
++}
++
++.offerPrice p {
++  margin: 0;
++
++  color: var(--primary);
++
++  font-size: 16px;
++  font-weight: 700;
++
++  white-space: nowrap;
++}
++
++.old-price {
++  color: var(--secondary);
++
++  font-size: 12px;
++
++  white-space: nowrap;
++}
++
++/* BUTTON */
++
++.product-text button {
++  border: none;
++  border-radius: 18px;
++
++  padding: 12px 22px;
++
++  background-color: var(--secondary);
++  color: var(--background);
++
++  font-size: 11px;
++  font-weight: 600;
++
++  white-space: nowrap;
++
++  cursor: pointer;
++
++  transition: 0.25s ease;
++}
++
++/* BUTTON HOVER */
++
++.product-text button:hover {
++  background-color: var(--accent);
++
++  color: var(--background);
++
++  transform: translateY(-2px);
++}
+diff --git a/frontend/src/component/product/productCart/productCart.jsx b/frontend/src/component/product/productCart/productCart.jsx
+new file mode 100644
+index 0000000..99cc9f7
+--- /dev/null
++++ b/frontend/src/component/product/productCart/productCart.jsx
+@@ -0,0 +1,48 @@
++import React, { Component } from 'react'
++import './productCart.css'
++
++export default class ProductCart extends Component {
++
++    render() {
++        return (
++            <div className='ProductCart'>
++
++                {/* produuct cart image */}
++                <div className='product-image'>
++                    <img src={this.props.ProductImage} alt="" />
++                </div>
++
++
++
++                {/* product cart name title */}
++                <h3 className='perfum-title'>
++                    {this.props.perfumName}
++                </h3>
++                {/* perfum discription */}
++                <p className='perfum-discription'>
++                    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Reiciendis, quia?
++                </p>
++
++                <div className='product-text'>
++
++                    {/* old price */}
++                    {this.props.priceforBSP && (
++                        <p className='BSPprice'>{this.props.priceforBSP}</p>
++                    )}
++
++                    {/* new price */}
++                    {this.props.priceAfteroff && (
++                        <div className='offerPrice'>
++                            <p>{this.props.priceAfteroff}</p>
++                            <del className='old-price'>
++                                {this.props.price}
++                            </del>
++                        </div>
++                    )}
++                    <button>افزودن به سبد خرید</button>
++
++                </div>
++            </div>
++        ) 
++    }
++}
+\ No newline at end of file
+diff --git a/frontend/src/index.css b/frontend/src/index.css
+index f174016..e8a0d46 100644
+--- a/frontend/src/index.css
++++ b/frontend/src/index.css
+@@ -1,5 +1,11 @@
+ :root {
+-    --bg-base : #5E0006;
+-    --base-text : #EED9B9;
+-}
++  --background: #5e0006;
++
++  --primary: #ffe7cb;
++
++  --text: #f5ebdd;
+ 
++  --secondary: #b58f7d;
++
++  --accent: #d6b98c;
++}
+diff --git a/package-lock.json b/package-lock.json
+new file mode 100644
+index 0000000..3af50a9
+--- /dev/null
++++ b/package-lock.json
+@@ -0,0 +1,30 @@
++{
++  "name": "microservice-shop",
++  "lockfileVersion": 3,
++  "requires": true,
++  "packages": {
++    "": {
++      "dependencies": {
++        "swiper": "^14.2.0"
++      }
++    },
++    "node_modules/swiper": {
++      "version": "14.2.0",
++      "resolved": "https://registry.npmjs.org/swiper/-/swiper-14.2.0.tgz",
++      "integrity": "sha512-GsL4M9Fq7Sg22OyL3SjdNj/0bxTfIxPJJHHW394Li0u5vYtExi0a09iBUc8CuLafJi5pAlH2AHUe1PocxHl45g==",
++      "funding": [
++        {
++          "type": "custom",
++          "url": "https://sponsors.nolimits4web.com"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/nolimits4web"
++        }
++      ],
++      "engines": {
++        "node": ">= 4.7.0"
++      }
++    }
++  }
++}
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000..f68d02b
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,5 @@
++{
++  "dependencies": {
++    "swiper": "^14.2.0"
++  }
++}
