@@ -1,0 +1,61 @@
+* [33m4b94def[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mtest-pr[m[33m, [m[1;31morigin/test-pr[m[33m)[m Adding a slider for products
+[31m|[m *   [33m4d9c48d[m[33m ([m[1;35mrefs/stash[m[33m)[m On test-pr: temporary-pr-test-changes
+[31m|[m [32m|[m[33m\[m  
+[31m|[m [32m|[m * [33m0b21d09[m index on test-pr: 139fb4d Merge pull request #10 from yas3in/feature/catalogue
+[31m|[m [32m|[m[32m/[m  
+[31m|[m *   [33m139fb4d[m[33m ([m[1;31mupstream/master[m[33m, [m[1;31mupstream/HEAD[m[33m)[m Merge pull request #10 from yas3in/feature/catalogue
+[31m|[m [34m|[m[35m\[m  
+[31m|[m [34m|[m * [33m38747ee[m[33m ([m[1;31mupstream/feature/catalogue[m[33m)[m refactor: simplify gateway proxy wildcard route handlers
+[31m|[m [34m|[m * [33mba58166[m chore: expose service ports in dev docker-compose for swagger docs access
+[31m|[m [34m|[m * [33mfd15a90[m style: format trailing newlines across catalogue package
+[31m|[m [34m|[m * [33m46e7e0e[m feat: implement catalogue microservice with class-based views, front and admin APIs, and migrations
+[31m|[m [34m|[m[34m/[m  
+[31m|[m * [33m47cfd51[m style: format trailing newlines across gateway and auth packages
+[31m|[m * [33m88fe75d[m refactor: relocate network and security modules to gateway service
+[31m|[m * [33m9a75534[m style: format whitespace in network.py
+[31m|[m * [33m1f75bc6[m feat: implement network module for internal communications and gateway proxy routing
+[31m|[m * [33m9bb058b[m feat: enhance gateway reverse proxy and add gateway integration tests
+[31m|[m * [33md800164[m refactor: improve type annotations and pydantic v2 compatibility in auth service and config
+[31m|[m * [33ma4362f8[m del unused files
+[31m|[m *   [33m4a75a43[m Merge pull request #5 from MojibYousefi/master
+[31m|[m [36m|[m[1;31m\[m  
+[31m|[m [36m|[m *   [33m660a8bc[m Merge branch 'yas3in:master' into master
+[31m|[m [36m|[m [1;32m|[m[36m\[m  
+[31m|[m [36m|[m [1;32m|[m[36m/[m  
+[31m|[m [36m|[m[36m/[m[1;32m|[m   
+[31m|[m * [1;32m|[m   [33m98eca98[m Merge pull request #4 from MojibYousefi/master
+[31m|[m [1;34m|[m[1;35m\[m [1;32m\[m  
+[31m|[m [1;34m|[m [1;35m|[m * [33meab07b4[m almost finished hero section ; i need a good picture for hero background
+[31m|[m [1;34m|[m [1;35m|[m[1;35m/[m  
+[31m|[m [1;34m|[m * [33m6c01884[m navbar : changing navbar color and width
+[31m|[m [1;34m|[m * [33m319eaf1[m moving on master branch and last changes
+[31m|[m [1;34m|[m[1;34m/[m[31m|[m 
+[31m|[m [1;34m|[m * [33m0f599e1[m for exaple
+[31m|[m [1;34m|[m * [33mdc5575b[m  1
+[31m|[m [1;34m|[m *   [33md5040af[m Merge branch 'frontend' of https://github.com/MojibYousefi/microservice-shop into frontend
+[31m|[m [1;34m|[m [32m|[m[33m\[m  
+[31m|[m [1;34m|[m * [33m|[m [33m938feed[m git ignore2
+[31m|[m * [33m|[m [33m|[m [33mf5df876[m del node modules
+[31m|[m * [33m|[m [33m|[m   [33mfc9a750[m Merge pull request #3 from MojibYousefi/frontend
+[31m|[m [33m|[m[35m\[m [33m\[m [33m\[m  
+[31m|[m [33m|[m [35m|[m[33m_[m[33m|[m[33m/[m  
+[31m|[m [33m|[m[33m/[m[35m|[m [33m|[m   
+[31m|[m [33m|[m * [33m|[m [33meaeb386[m Merge pull request #4 from MojibYousefi/master
+[31m|[m [33m|[m[33m/[m[1;31m|[m [33m|[m 
+[31m|[m [33m|[m * [33m|[m   [33m83ad5e9[m Merge pull request #2 from yas3in/master
+[31m|[m [33m|[m [1;32m|[m[33m\[m [33m\[m  
+[31m|[m [33m|[m [1;32m|[m[33m/[m [33m/[m  
+[31m|[m [33m|[m[33m/[m[1;32m|[m [33m|[m   
+[31m|[m * [1;32m|[m [33m|[m [33m4653863[m Merge pull request #2 from MojibYousefi/master
+[31m|[m [1;34m|[m[1;32m\[m[1;32m|[m [33m|[m 
+[31m|[m [1;34m|[m o [33m|[m   [33m72195cb[m Merge pull request #1 from yas3in/master
+[31m|[m [1;34m|[m [1;36m|[m[1;34m\[m [33m\[m  
+[31m|[m [1;34m|[m [1;36m|[m[1;34m/[m [33m/[m  
+[31m|[m [1;34m|[m[1;34m/[m[1;36m|[m [33m|[m   
+[31m|[m o [1;36m|[m [33m|[m   [33m2eb7ada[m Merge pull request #1 from MojibYousefi/frontend
+[31m|[m [1;36m|[m[33m\[m [1;36m\[m [33m\[m  
+[31m|[m [1;36m|[m [33m|[m[1;36m/[m [33m/[m  
+[31m|[m [1;36m|[m[1;36m/[m[33m|[m [33m/[m   
+[31m|[m [1;36m|[m [33m|[m[33m/[m    
+[31m|[m [1;36m|[m o [33m34dee2a[m navbar : build navbar
+o [1;36m|[m [33m|[m [33m232e77c[m rebuilding index page and add slider to products
