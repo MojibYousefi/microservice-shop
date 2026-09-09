@@ -1,0 +1,8 @@
+.aboutUs-container {
+    width: 1250px;
+    margin: 0 auto;
+}
+.aboutUs-content {
+    display: flex;
+    flex-direction: row;
+}

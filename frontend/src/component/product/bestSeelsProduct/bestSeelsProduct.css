@@ -1,0 +1,74 @@
+.best-seal-product {
+  width: 1250px;
+  margin: 0 auto;
+}
+
+.best-seal-product .swiper {
+  width: 100%;
+}
+
+.best-seal-product .swiper-slide {
+  display: flex;
+  justify-content: center;
+}
+.best-seal-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 1250px;
+  margin: 0 auto;
+}
+.right-text {
+  text-align: right;
+}
+.right-text span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: rtl;
+
+  color: var(--accent);
+
+  font-weight: 500;
+}
+.right-text span::before {
+  content: "";
+  width: 40px;
+  height: 1px;
+  background-color: var(--accent);
+  flex-shrink: 0;
+}
+.right-text h2 {
+  color: var(--text);
+}
+.whach-all a {
+  text-decoration: none;
+  color: var(--accent);
+  font-size: 14px;
+}
+@media (max-width: 900px) {
+  .best-seel-product {
+    display: flex;
+    gap: 16px;
+
+    overflow-x: auto;
+    padding: 0 20px 15px;
+
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .best-seel-product::-webkit-scrollbar {
+    display: none;
+  }
+  .bestseals-tltle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .bestseals-tltle::after,
+  .bestseals-tltle::before {
+    content: "";
+    height: 2px;
+    flex: 1;
+  }
+}
