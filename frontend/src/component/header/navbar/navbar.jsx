@@ -30,20 +30,22 @@ export default class Navbar extends Component {
             <>
                 {this.state.isMobile ? (
                     <div className='mobile-navbar'>
-                        <div className="mobile-navbar-item">
-                            <a href="">خانه</a>
-                        </div>
-                        <div className="mobile-navbar-item">
-                            <a href="">کلکسیون</a>
-                        </div>
-                        <div className="mobile-navbar-item">
-                            <a href="">سبد خرید</a>
-                        </div>
-                        <div className="mobile-navbar-item">
-                            <a href="">حساب کاربری</a>
-                        </div>
-                        <div className="mobile-navbar-item">
-                            <a href="">منو</a>
+                        <div className='mobile-navbar-2'>
+                            <div className="mobile-navbar-item">
+                                <a href="">جستجو</a>
+                            </div>
+                            <div className="mobile-navbar-item">
+                                <a href="">کلکسیون</a>
+                            </div>
+                            <div className="mobile-navbar-item">
+                                <a href="">خانه</a>
+                            </div>
+                            <div className="mobile-navbar-item">
+                                <a href="">حساب کاربری</a>
+                            </div>
+                            <div className="mobile-navbar-item">
+                                <a href="">سبد خرید</a>
+                            </div>
                         </div>
                     </div>) : (
                     // desktop navbar

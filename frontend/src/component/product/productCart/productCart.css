@@ -142,3 +142,10 @@
 
   transform: translateY(-2px);
 }
+
+
+@media (max-width : 900px) {
+  .ProductCart {
+    max-width: 100%;
+  }
+}

@@ -1,4 +1,19 @@
-body{
-    margin: 0;
-    background-color: var(--background);
+body {
+  margin: 0;
+  background: radial-gradient(
+    circle at center,
+    #9b0f06 0%,
+    #5e0006 45%,
+    #420004 100%
+  );
+}
+@media (max-width: 900px) {
+  body {
+    background: radial-gradient(
+      circle at center,
+      #9b0f06 0%,
+      #5e0006 45%,
+      #420004 100%
+    );
+  }
 }

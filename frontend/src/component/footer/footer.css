@@ -1,6 +1,6 @@
 .parent-footer {
-  background-color: #2B0003;
-  border-top: 1px solid  var(--primary);
+ /* background: linear-gradient(180deg, #5e0006, #2B0003); */
+  /* border-top: 1px solid  var(--primary); */
 }
 
 .footer {
