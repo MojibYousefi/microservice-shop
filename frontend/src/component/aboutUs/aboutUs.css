@@ -1,8 +1,41 @@
 .aboutUs-container {
     width: 1250px;
-    margin: 0 auto;
+    margin: 100px auto;
+}
+.aboutUs-container span {
+    text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    direction: rtl;
+
+    color: var(--accent);
+
+    font-weight: 500;
+}
+.aboutUs-container span::before {
+    content: "";
+    height: 2px;
+    width: 40px;
+
+    background-color: var(--accent);
 }
 .aboutUs-content {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    gap: 24px;
+}
+.aboutUs-content h2 {
+    font-size: 32px;
+
+    text-align: right;
+    color: var(--text);
+}
+.aboutUs-content p {
+    max-width: 600px;
+    margin: 0 0 0 auto;
+    font-size: 16px;
+    line-height: 160%;
+    text-align: right;
+    color: var(--primary);
 }
