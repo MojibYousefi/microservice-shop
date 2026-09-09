@@ -13,8 +13,8 @@ export default class App extends Component {
       <div>
         <Header></Header>
         <ParrentProduct></ParrentProduct>
-        <Footer></Footer>
         <AboutUs></AboutUs>
+        <Footer></Footer>
       </div>
     )
   }

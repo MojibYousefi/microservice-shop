@@ -65,7 +65,7 @@
   align-items: center;
   
 
-  gap: 25px;
+  gap: 27px;
 
   padding: 0 16px 16px;
 }
@@ -116,11 +116,11 @@
 
 .product-text button {
   border: none;
-  border-radius: 18px;
+  border-radius: 15px;
 
-  padding: 12px 22px;
+  padding: 12px 19px;
 
-  background-color: var(--secondary);
+  background-color: var(--primary);
   color: var(--background);
 
   font-size: 11px;

@@ -31,13 +31,23 @@
 
   padding: 0 20px;
 
+    position: fixed;
+    top: 0;
+    left: 50%;
+    width: 100%;
+    transform: translateX(-50%);
+
+    z-index: 1000;
+
   box-sizing: border-box;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  background: #2B0003;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 
   border-radius: 20px;
 
@@ -158,15 +168,13 @@
   align-items: center;
   gap: 10px;
 
-
   min-width: 160px;
 
   justify-content: flex-end;
 }
 
 .signin {
-
-  color: var(--primary); 
+  color: var(--primary);
 
   padding: 5px 10px;
   border-radius: 20px;
