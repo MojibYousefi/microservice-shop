@@ -39,3 +39,10 @@
     text-align: right;
     color: var(--primary);
 }
+
+@media (max-width: 900px) {
+    .aboutUs-container {
+        max-width: 90%;
+        margin: 100px auto;
+    }   
+}

@@ -5,7 +5,6 @@ export default class Footer extends Component {
     render() {
         return (
             <>
-            <div className='parent-footer'>
                 <div className='footer'>
                     <div className='contact'>
                         <h3 className='footer-title'>تماس با ما</h3>
@@ -29,8 +28,7 @@ export default class Footer extends Component {
                     <p>NOIR ESSENCE © 2026. All Rights Reserved</p>
                     <p>تمامی حقوق مادی و معنوی متعلق به گالری نوآر اسنس می‌باشد</p>
                 </div>
-            </div>
-                </>
+            </>
         )
     }
 }
