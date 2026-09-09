@@ -1,0 +1,144 @@
+.ProductCart {
+  width: 238px;
+
+  background-color: #2B0003;
+
+  border-radius: 20px;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  direction: rtl;
+  flex-shrink: 0;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* IMAGE */
+
+.product-image {
+  width: 100%;
+  height: 210px;
+
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  display: block;
+}
+
+/* PRODUCT TITLE */
+
+.perfum-title {
+  margin: 18px 20px 6px;
+
+  color: var(--primary);
+
+  font-size: 20px;
+  font-weight: 700;
+
+  text-align: right;
+}
+
+/* DESCRIPTION */
+
+.perfum-discription {
+  margin: 0 20px 15px;
+
+  color: var(--text);
+
+  font-size: 14px;
+  line-height: 1.7;
+
+  text-align: right;
+}
+
+/* PRICE + BUTTON */
+
+.product-text {
+  display: flex;
+  align-items: center;
+  
+
+  gap: 25px;
+
+  padding: 0 16px 16px;
+}
+
+/* NORMAL PRICE */
+
+.BSPprice {
+  margin: 0;
+
+  color: var(--primary);
+
+  font-size: 15px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+/* OFFER PRICE */
+
+.offerPrice {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.offerPrice p {
+  margin: 0;
+
+  color: var(--primary);
+
+  font-size: 16px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.old-price {
+  color: var(--secondary);
+
+  font-size: 12px;
+
+  white-space: nowrap;
+}
+
+/* BUTTON */
+
+.product-text button {
+  border: none;
+  border-radius: 18px;
+
+  padding: 12px 22px;
+
+  background-color: var(--secondary);
+  color: var(--background);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition: 0.25s ease;
+}
+
+/* BUTTON HOVER */
+
+.product-text button:hover {
+  background-color: var(--accent);
+
+  color: var(--background);
+
+  transform: translateY(-2px);
+}

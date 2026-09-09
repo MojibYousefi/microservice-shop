@@ -1,5 +1,11 @@
 :root {
-    --bg-base : #5E0006;
-    --base-text : #EED9B9;
-}
+  --background: #5e0006;
 
+  --primary: #ffe7cb;
+
+  --text: #f5ebdd;
+
+  --secondary: #b58f7d;
+
+  --accent: #d6b98c;
+}

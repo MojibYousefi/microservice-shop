@@ -27,6 +27,7 @@
   height: 64px;
 
   margin: 0 auto;
+  margin-top: 10px !important;
 
   padding: 0 20px;
 
@@ -36,11 +37,9 @@
   align-items: center;
   justify-content: space-between;
 
-    background: rgba(94, 0, 6, 0.45);
-    backdrop-filter: blur(10px);
+  background: #2B0003;
 
-    border: 1px solid rgba(238, 217, 185, 0.15);
-    border-radius: 20px; 
+  border-radius: 20px;
 
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
@@ -52,10 +51,11 @@
 .navbar-logo {
   display: flex;
   align-items: center;
+  justify-content: center;
 
   gap: 8px;
 
-  color: var(--base-text);
+  color: var(--text);
 
   min-width: 160px;
 }
@@ -68,13 +68,13 @@
   align-items: center;
   justify-content: center;
 
-  border: 1px solid rgba(238, 217, 185, 0.6);
+  border: 1px solid var(--text);
 
   border-radius: 50%;
 
   font-size: 22px;
 
-  color: #eed9b9;
+  color: var(--text);
 }
 
 .logo-text {
@@ -116,7 +116,7 @@
 .navbar-menu a {
   position: relative;
 
-  color: var(--base-text);
+  color: var(--text);
 
   text-decoration: none;
 
@@ -136,13 +136,13 @@
   width: 0;
   height: 1px;
 
-  background: #d53e0f;
+  background: var(--accent);
 
   transition: width 0.3s ease;
 }
 
 .navbar-menu a:hover {
-  color: var(--base-text);
+  color: var(--primary);
 }
 
 .navbar-menu a:hover::after {
@@ -156,8 +156,8 @@
 .navbar-actions {
   display: flex;
   align-items: center;
+  gap: 10px;
 
-  gap: 20px;
 
   min-width: 160px;
 
@@ -165,19 +165,24 @@
 }
 
 .signin {
-  color: var(--base-text);
+
+  color: var(--primary); 
+
+  padding: 5px 10px;
+  border-radius: 20px;
 
   text-decoration: none;
 
   font-family: Arial, sans-serif;
 
-  font-size: 12px;
+  font-size: 14px;
 
   transition: 0.3s;
 }
 
 .signin:hover {
-  color: var(--base-text);
+  color: var(--background);
+  background-color: var(--accent);
 }
 
 /* =========================
@@ -191,9 +196,9 @@
 
   border-radius: 12px;
 
-  background: var(--base-text);
+  background: var(--primary);
 
-  color: var(--bg-base);
+  color: var(--background);
 
   font-family: inherit;
 
@@ -209,11 +214,32 @@
 }
 
 .start-btn:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 8px 20px rgba(213, 62, 15, 0.35);
+  background: var(--accent);
 }
 
 .start-btn:active {
   transform: translateY(0);
+}
+/* ==========================================
+MOBILE NAVBAR
+==============================================*/
+
+.mobile-navbar {
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  padding: 10px 0;
+
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+
+  background-color: #5e0006;
+
+  z-index: 1000;
+}
+
+.mobile-navbar-item a {
+  text-decoration: none;
+  color: var(--base-text);
 }

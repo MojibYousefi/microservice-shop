@@ -1,0 +1,72 @@
+/* =========================
+   OFFER TITLE
+========================= */
+.offer-title{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 1250px;
+  margin: 30px auto;
+}
+.right-txt{
+  text-align: right;
+}
+.right-txt h2{
+  color: var(--text);
+}
+.right-txt span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: rtl;
+
+  color: var(--accent);
+
+  font-weight: 500;
+}
+.right-txt span::before {
+  content: "";
+  width: 40px;
+  height: 1px;
+  background-color: var(--accent);
+  flex-shrink: 0;
+}
+.offer-product {
+  width: 1250px;
+  margin: 0 auto;
+}
+.offer-product .swiper {
+  width: 100%;
+}
+.offer-product .swiper-slide {
+  display: flex;
+  justify-content: center;
+}
+@media (max-width: 900px) {
+  .offerProductCart {
+    display: flex;
+    gap: 16px;
+
+    overflow-x: auto;
+    padding: 0 20px 15px;
+
+    scroll-snap-type: x mandatory;
+
+    scrollbar-width: none;
+  }
+  .offerProductCart::-webkit-scrollbar {
+    display: none;
+  }
+  .offertitle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+  }
+  .offertitle::before,
+  .offertitle::after {
+    content: "";
+    height: 2px;
+    flex: 1;
+  }
+}
