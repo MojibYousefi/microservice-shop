@@ -1,0 +1,489 @@
+diff --git a/frontend/src/component/header/header.css b/frontend/src/component/header/header.css
+index 05e142f..c7f2b08 100644
+--- a/frontend/src/component/header/header.css
++++ b/frontend/src/component/header/header.css
+@@ -1,8 +1,8 @@
+ .header-container {
+-  max-width: 1400px;
++  max-width: 1250px;
+   height: 680px;
+   margin: 0 auto;
+-
++  padding: 0 !important;
+   background: var(--background);
+ 
+   display: flex;
+@@ -17,7 +17,6 @@
+   width: 50%;
+   direction: rtl;
+ 
+-  transform: translateX(-35px);
+ }
+ .header-content span {
+   display: flex;
+diff --git a/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.css b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.css
+index b222443..e03f8f1 100644
+--- a/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.css
++++ b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.css
+@@ -1,58 +1,21 @@
+-.products-viewport {
+-  width: 1300px;
+-  overflow: hidden;
++.best-seal-product {
++  width: 1250px;
+   margin: 0 auto;
+ }
+ 
+-.products-track {
+-  display: flex;
+-  gap: 20px;
+-  transition: transform 0.4s ease;
+-}
+-
+-.products-track .ProductCart {
+-  flex: 0 0 calc((1300px - 60px) / 4);
+-}
+-.products-slider {
+-  position: relative;
+-  width: 1300px;
+-  margin: 0 auto;
++.best-seal-product .swiper {
++  width: 100%;
+ }
+-.slider-btn {
+-  position: absolute;
+-  top: 50%;
+-  transform: translateY(-50%);
+-
+-  width: 45px;
+-  height: 45px;
+-
+-  border: none;
+-  border-radius: 50%;
+-
+-  background-color: var(--accent);
+-  color: var(--text);
+-
+-  font-size: 28px;
+ 
++.best-seal-product .swiper-slide {
+   display: flex;
+-  align-items: center;
+   justify-content: center;
+-
+-  cursor: pointer;
+-  z-index: 10;
+-}
+-.slider-btn.prev {
+-  left: -60px;
+ }
+-
+-.slider-btn.next {
+-  right: -60px;
+-}
+-
+ .best-seal-title {
+   display: flex;
+   justify-content: space-between;
+-  width: 1300px;
++  align-items: center;
++  width: 1250px;
+   margin: 0 auto;
+ }
+ .right-text {
+diff --git a/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.jsx b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.jsx
+index 83c88f5..177a978 100644
+--- a/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.jsx
++++ b/frontend/src/component/product/bestSeelsProduct/bestSeelsProduct.jsx
+@@ -1,8 +1,13 @@
+-import React, { Component } from 'react'
+-import ProductCart from '../productCart/productCart'
+ import './bestSeelsProduct.css'
++import ProductCart from '../productCart/productCart'
+ import productimage from "../../../assets/picture/product.png"
+ 
++import React, { Component } from 'react'
++
++import { Autoplay } from 'swiper/modules'
++import { Swiper, SwiperSlide } from 'swiper/react'
++import 'swiper/css'
++
+ export default class BestSeelsProduct extends Component {
+     constructor(props) {
+         super(props)
+@@ -38,23 +43,16 @@ export default class BestSeelsProduct extends Component {
+                     priceforBSP: "7,000,000",
+                     ProductImage: productimage,
+                 },
++                {
++                    id: 6,
++                    perfumName: "test",
++                    priceforBSP: "1,000,000",
++                    ProductImage: productimage,
++                }
+             ],
+             slide: 0
+         }
+     }
+-    nextSlide = () => {
+-        this.setState(prevState => ({
+-            slide: Math.min(
+-                prevState.slide + 1,
+-                this.state.products.length - 4
+-            )
+-        }))
+-    }
+-    prevSlide = () => {
+-        this.setState(prevState => ({
+-            slide: Math.max(prevState.slide - 1, 0)
+-        }))
+-    }
+     render() {
+         return (
+             <div>
+@@ -67,24 +65,26 @@ export default class BestSeelsProduct extends Component {
+                         <h2>پرفروش ترین محصولات</h2>
+                     </div>
+                 </div>
+-                <div className='products-slider'>
+-                    <button onClick={this.prevSlide} className='slider-btn prev'>‹</button>
+-                    <div className='products-viewport'>
+-                        <div
+-                            className='products-track'
+-                            style={{
+-                                transform: `translateX(-${this.state.slide * 330}px)`
+-                            }}
+-                        >
+-                            {this.state.products.map(perf =>
++                <div className='best-seal-product'>
++                    <Swiper
++                        modules={[Autoplay]}
++                        slidesPerView={5}
++                        spaceBetween={20}
++                        autoplay={{
++                            delay: 2000,
++                            pauseOnMouseEnter: true,
++                            disableOnInteraction: false
++                        }}
++                    >
++                        {this.state.products.map(perf =>
++                            <SwiperSlide key={perf.id}>
+                                 <ProductCart
+-                                    key={perf.id}
+                                     {...perf}
+                                 />
+-                            )}
+-                        </div>
+-                    </div>
+-                    <button className='slider-btn next' onClick={this.nextSlide}>›</button>
++                            </SwiperSlide>
++                        )}
++
++                    </Swiper>
+                 </div>
+             </div>
+         )
+diff --git a/frontend/src/component/product/offerProduct/offerProduct.css b/frontend/src/component/product/offerProduct/offerProduct.css
+index 45285a1..5323ab6 100644
+--- a/frontend/src/component/product/offerProduct/offerProduct.css
++++ b/frontend/src/component/product/offerProduct/offerProduct.css
+@@ -4,7 +4,8 @@
+ .offer-title{
+   display: flex;
+   justify-content: space-between;
+-  width: 1300px;
++  align-items: center;
++  width: 1250px;
+   margin: 30px auto;
+ }
+ .right-txt{
+@@ -30,95 +31,16 @@
+   background-color: var(--accent);
+   flex-shrink: 0;
+ }
+-
+-
+-/* =========================
+-   OFFER SLIDER
+-========================= */
+-
+-.offer-slider {
+-  position: relative;
+-
+-  width: 1300px;
+-
++.offer-product {
++  width: 1250px;
+   margin: 0 auto;
+ }
+-
+-/* =========================
+-   VIEWPORT
+-========================= */
+-
+-.offer-viewport {
+-  width: 1300px;
+-
+-  overflow: hidden;
+-}
+-
+-/* =========================
+-   TRACK
+-========================= */
+-
+-.offer-track {
+-  display: flex;
+-
+-  gap: 16px;
+-
+-  transition: transform 0.4s ease;
+-}
+-
+-/* =========================
+-   PRODUCT CARD
+-========================= */
+-
+-.offer-track > .ProductCart {
+-  flex: 0 0 312px;
++.offer-product .swiper {
++  width: 100%;
+ }
+-
+-/* =========================
+-   SLIDER BUTTON
+-========================= */
+-
+-.offer-slider-btn {
+-  position: absolute;
+-
+-  top: 50%;
+-
+-  transform: translateY(-50%);
+-
+-  width: 45px;
+-  height: 45px;
+-
+-  border: none;
+-  border-radius: 50%;
+-
+-  background-color: var(--accent);
+-  color: var(--text);
+-
+-  font-size: 28px;
+-
++.offer-product .swiper-slide {
+   display: flex;
+-  align-items: center;
+   justify-content: center;
+-
+-  cursor: pointer;
+-
+-  z-index: 10;
+-}
+-
+-/* =========================
+-   PREVIOUS
+-========================= */
+-
+-.offer-slider-btn.prev {
+-  left: -60px;
+-}
+-
+-/* =========================
+-   NEXT
+-========================= */
+-
+-.offer-slider-btn.next {
+-  right: -60px;
+ }
+ @media (max-width: 900px) {
+   .offerProductCart {
+diff --git a/frontend/src/component/product/offerProduct/offerProduct.jsx b/frontend/src/component/product/offerProduct/offerProduct.jsx
+index 84ff77d..8d8845a 100644
+--- a/frontend/src/component/product/offerProduct/offerProduct.jsx
++++ b/frontend/src/component/product/offerProduct/offerProduct.jsx
+@@ -1,8 +1,13 @@
+ import React, { Component } from 'react'
+ import "./offerProduct.css"
+ import ProductCart from '../productCart/productCart'
++
+ import productimage from "../../../assets/picture/product.png"
+ 
++import { Autoplay } from 'swiper/modules'
++import { Swiper, SwiperSlide } from 'swiper/react'
++import 'swiper/css'
++
+ export default class OfferProduct extends Component {
+     constructor(props) {
+         super(props)
+@@ -44,6 +49,12 @@ export default class OfferProduct extends Component {
+                     ProductImage: productimage,
+                     priceAfteroff: "4,000,000"
+                 },
++                {
++                    id: 6,
++                    perfumName: "test",
++                    priceforBSP: "1,000,000",
++                    ProductImage: productimage,
++                }
+             ],
+ 
+             slide: 0
+@@ -81,45 +92,26 @@ export default class OfferProduct extends Component {
+                         <h2>محصولات با بیشترین تخفیف</h2>
+                     </div>
+                 </div>
+-
+-                <div className='offer-slider'>
+-
+-                    <button
+-                        onClick={this.prevSlide}
+-                        className='offer-slider-btn prev'
++                <div className='offer-product'>
++                    <Swiper
++                        modules={[Autoplay]}
++                        slidesPerView={5}
++                        spaceBetween={20}
++                        autoplay={{
++                            delay: 2000,
++                            pauseOnMouseEnter: true,
++                            disableOnInteraction: false
++                        }}
+                     >
+-                        ‹
+-                    </button>
+-
+-                    <div className='offer-viewport'>
+-
+-                        <div
+-                            className='offer-track'
+-                            style={{
+-                                transform: `translateX(-${this.state.slide * 328}px)`
+-                            }}
+-                        >
+-
+-                            {this.state.products.map(perf =>
++                        {this.state.products.map(perf =>
++                            <SwiperSlide key={perf.id}>
+                                 <ProductCart
+-                                    key={perf.id}
+                                     {...perf}
+                                 />
+-                            )}
+-
+-                        </div>
+-
+-                    </div>
+-
+-                    <button
+-                        onClick={this.nextSlide}
+-                        className='offer-slider-btn next'
+-                    >
+-                        ›
+-                    </button>
+-
++                            </SwiperSlide>
++                        )}
++                    </Swiper>
+                 </div>
+-
+             </div>
+         )
+     }
+diff --git a/frontend/src/component/product/productCart/productCart.css b/frontend/src/component/product/productCart/productCart.css
+index e300434..5e16a73 100644
+--- a/frontend/src/component/product/productCart/productCart.css
++++ b/frontend/src/component/product/productCart/productCart.css
+@@ -1,5 +1,5 @@
+ .ProductCart {
+-  width: 310px;
++  width: 238px;
+ 
+   background-color: #2B0003;
+ 
+@@ -19,7 +19,7 @@
+ 
+ .product-image {
+   width: 100%;
+-  height: 200px;
++  height: 210px;
+ 
+   overflow: hidden;
+ }
+@@ -63,9 +63,9 @@
+ .product-text {
+   display: flex;
+   align-items: center;
+-  justify-content: space-between;
++  
+ 
+-  gap: 10px;
++  gap: 25px;
+ 
+   padding: 0 16px 16px;
+ }
+@@ -77,7 +77,7 @@
+ 
+   color: var(--primary);
+ 
+-  font-size: 16px;
++  font-size: 15px;
+   font-weight: 600;
+ 
+   white-space: nowrap;
+@@ -123,7 +123,7 @@
+   background-color: var(--secondary);
+   color: var(--background);
+ 
+-  font-size: 13px;
++  font-size: 11px;
+   font-weight: 600;
+ 
+   white-space: nowrap;
+diff --git a/package-lock.json b/package-lock.json
+new file mode 100644
+index 0000000..3af50a9
+--- /dev/null
++++ b/package-lock.json
+@@ -0,0 +1,30 @@
++{
++  "name": "microservice-shop",
++  "lockfileVersion": 3,
++  "requires": true,
++  "packages": {
++    "": {
++      "dependencies": {
++        "swiper": "^14.2.0"
++      }
++    },
++    "node_modules/swiper": {
++      "version": "14.2.0",
++      "resolved": "https://registry.npmjs.org/swiper/-/swiper-14.2.0.tgz",
++      "integrity": "sha512-GsL4M9Fq7Sg22OyL3SjdNj/0bxTfIxPJJHHW394Li0u5vYtExi0a09iBUc8CuLafJi5pAlH2AHUe1PocxHl45g==",
++      "funding": [
++        {
++          "type": "custom",
++          "url": "https://sponsors.nolimits4web.com"
++        },
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/nolimits4web"
++        }
++      ],
++      "engines": {
++        "node": ">= 4.7.0"
++      }
++    }
++  }
++}
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000..f68d02b
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,5 @@
++{
++  "dependencies": {
++    "swiper": "^14.2.0"
++  }
++}
