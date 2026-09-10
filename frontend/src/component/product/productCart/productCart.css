@@ -146,6 +146,29 @@
 
 @media (max-width : 900px) {
   .ProductCart {
-    max-width: 100%;
+    width: 100%;
+    height: auto;
+  }
+  .product-image {
+    height: 170px;
+  }
+  .perfum-title {
+    margin: 10px 12px 4px;
+    font-size: 16px;
+  }
+  .perfum-discription {
+    margin: 0 12px 10px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .product-text {
+    gap: 8px;
+    padding: 0 10px 12px;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+  .product-text button {
+    padding: 8px 5px;
+    font-size: 9px;
   }
 }
