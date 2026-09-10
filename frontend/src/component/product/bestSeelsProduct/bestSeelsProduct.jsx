@@ -70,6 +70,20 @@ export default class BestSeelsProduct extends Component {
                         modules={[Autoplay]}
                         slidesPerView={5}
                         spaceBetween={20}
+                        breakpoints={{
+                            0: {
+                                slidesPerView: 2,
+                                spaceBetween: 10
+                            },
+                            900: {
+                                slidesPerView: 2,
+                                spaceBetween: 20
+                            },
+                            1200: {
+                                slidesPerView: 5,
+                                spaceBetween: 20
+                            }
+                        }}
                         autoplay={{
                             delay: 2000,
                             pauseOnMouseEnter: true,
