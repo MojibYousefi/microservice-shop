@@ -58,27 +58,10 @@ export default class OfferProduct extends Component {
                 }
             ],
 
-            slide: 0
         }
     }
 
-    nextSlide = () => {
-        this.setState(prevState => ({
-            slide: Math.min(
-                prevState.slide + 1,
-                this.state.products.length - 4
-            )
-        }))
-    }
 
-    prevSlide = () => {
-        this.setState(prevState => ({
-            slide: Math.max(
-                prevState.slide - 1,
-                0
-            )
-        }))
-    }
 
     render() {
         return (
