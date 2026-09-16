@@ -1,0 +1,207 @@
+.product-detail {
+  width: 1250px;
+  /* background: radial-gradient(
+    circle at center,
+    #9b0f06 100%,
+    #5e0006 45%,
+    #420004 0%
+  ); */
+  display: flex;
+
+  margin: 150px auto 60px auto;
+}
+
+.first-sectiom {
+  width: 100%;
+}
+
+.product-galery {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 25px;
+}
+
+.product-main-image {
+  width: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-main-image img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+.product-thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.product-thumbnail {
+  width: 90px;
+  height: 90px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  border: 1px solid transparent;
+  transition: 0.2s ease;
+}
+
+.product-thumbnail:hover {
+  border-color: var(--accent);
+}
+
+.product-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+.product-content {
+  width: 45%;
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
+}
+.perfume-name {
+  margin: 0;
+  color: var(--primary);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.perfume-brand {
+  margin: -10px 0 0;
+  color: var(--secondary);
+  font-size: 18px;
+}
+.perfume-desc {
+  margin: 10px 0;
+  max-width: 600px;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.9;
+}
+.price-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+.perfume-price {
+  margin: 0;
+  color: var(--secondary);
+  font-size: 18px;
+  text-decoration: line-through;
+}
+.perfume-final-price {
+  margin: 0;
+  color: var(--accent);
+  font-size: 26px;
+  font-weight: 700;
+}
+.buttons-section {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 15px;
+}
+.addToCart-btn {
+  height: 52px;
+  padding: 0 35px;
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+
+  background-color: var(--accent);
+  color: var(--background);
+
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.addToCart-btn:hover {
+  background-color: transparent;
+  color: var(--accent);
+}
+.buttons-section > div {
+  height: 52px;
+  display: flex;
+  align-items: center;
+
+  border: 1px solid var(--secondary);
+}
+.plusPerfumeCount,
+.minusPerfumeCount {
+  width: 45px;
+  height: 100%;
+
+  border: none;
+  background-color: transparent;
+  color: var(--primary);
+
+  font-size: 20px;
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+.plusPerfumeCount:hover,
+.minusPerfumeCount:hover {
+  color: var(--accent);
+}
+.buttons-section > div p {
+  min-width: 35px;
+  margin: 0;
+
+  text-align: center;
+  color: var(--primary);
+  font-size: 16px;
+}
+
+.Features {
+  width: 1250px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-evenly;
+  padding: 10px 0;
+  position: relative;
+}
+.Feature-item {
+  position: relative;
+  padding: 20px 50px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  gap: 10px;
+  border: 1.5px solid var(--text);
+  border-radius: 12px;
+}
+
+.big-p{
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--primary);
+  margin: 0;
+}
+.smal-p{
+  font-size: 16px;
+  color: var(--secondary);
+  margin: 0;
+}

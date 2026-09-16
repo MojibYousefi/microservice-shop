@@ -52,32 +52,16 @@ export default class OfferProduct extends Component {
                 {
                     id: 6,
                     perfumName: "test",
-                    priceforBSP: "1,000,000",
+                    price: "1,500,000",
                     ProductImage: productimage,
+                    priceAfteroff: "1,000,000"
                 }
             ],
 
-            slide: 0
         }
     }
 
-    nextSlide = () => {
-        this.setState(prevState => ({
-            slide: Math.min(
-                prevState.slide + 1,
-                this.state.products.length - 4
-            )
-        }))
-    }
 
-    prevSlide = () => {
-        this.setState(prevState => ({
-            slide: Math.max(
-                prevState.slide - 1,
-                0
-            )
-        }))
-    }
 
     render() {
         return (
