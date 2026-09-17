@@ -16,6 +16,47 @@ async def setup_test_db() -> AsyncGenerator[None, None]:
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("resource", ["categories", "brands"])
+@pytest.mark.parametrize("payload", [
+    {}, {"name": None}, {"name": ""}, {"name": "   "},
+    {"name": "Example", "parent": 0},
+    {"name": "Example", "parent": -1},
+    {"name": "Example", "parent": "invalid"},
+    {"name": "Example", "parent": 2147483647},
+])
+async def test_admin_create_rejects_invalid_data(resource, payload) -> None:
+    async with AsyncClient(transport=ASGITransport(app=catalogue_app), base_url="http://test") as ac:
+        response = await ac.post(
+            f"/api/v1/catalogue/admin/{resource}", json=payload,
+            headers={"Authorization": "Bearer dev-mock-token"}
+        )
+    assert response.status_code == 422
+    assert "detail" in response.json()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("resource", ["categories", "brands"])
+async def test_admin_create_handles_integrity_error(resource, monkeypatch) -> None:
+    from unittest.mock import AsyncMock
+    from sqlalchemy.exc import IntegrityError
+    from sqlmodel.ext.asyncio.session import AsyncSession
+
+    commit = AsyncMock(side_effect=IntegrityError("INSERT", {}, Exception("private database error")))
+    rollback = AsyncMock()
+    monkeypatch.setattr(AsyncSession, "commit", commit)
+    monkeypatch.setattr(AsyncSession, "rollback", rollback)
+    async with AsyncClient(transport=ASGITransport(app=catalogue_app), base_url="http://test") as ac:
+        response = await ac.post(
+            f"/api/v1/catalogue/admin/{resource}", json={"name": "Example"},
+            headers={"Authorization": "Bearer dev-mock-token"}
+        )
+    assert response.status_code == 409
+    assert "detail" in response.json()
+    assert "private database error" not in response.text
+    rollback.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_category_front_and_admin_crud() -> None:
     """
     Verifies Category Admin CRUD and Front listing/hierarchy tree.
