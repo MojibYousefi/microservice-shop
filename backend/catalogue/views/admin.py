@@ -120,8 +120,29 @@ class CategoryAdminView:
             if not category:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found.")
 
-            await db.delete(category)
-            await db.commit()
+            children = await db.exec(select(Category.id).where(Category.parent == category_id).limit(1))
+            if children.first() is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This category has subcategories. Delete or move them before deleting it."
+                )
+
+            products = await db.exec(select(Product.id).where(Product.category == category_id).limit(1))
+            if products.first() is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This category has products. Delete or move them before deleting it."
+                )
+
+            try:
+                await db.delete(category)
+                await db.commit()
+            except IntegrityError:
+                await db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This category is referenced by other data and cannot be deleted. Remove or move its references first."
+                ) from None
             return None
 
         return router

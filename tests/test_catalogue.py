@@ -57,6 +57,68 @@ async def test_admin_create_handles_integrity_error(resource, monkeypatch) -> No
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("dependency", ["subcategory", "product"])
+async def test_category_delete_rejects_dependencies(dependency) -> None:
+    headers = {"Authorization": "Bearer dev-mock-token"}
+    url = "/api/v1/catalogue/admin/categories"
+    async with AsyncClient(transport=ASGITransport(app=catalogue_app), base_url="http://test") as ac:
+        parent = await ac.post(url, json={"name": "Parent"}, headers=headers)
+        assert parent.status_code == 201
+        category_id = parent.json()["id"]
+        if dependency == "subcategory":
+            dependent = await ac.post(url, json={"name": "Child", "parent": category_id}, headers=headers)
+            dependent_url = url
+            message = "This category has subcategories. Delete or move them before deleting it."
+        else:
+            product_type = await ac.post(
+                "/api/v1/catalogue/admin/types", json={"title": "Test type"}, headers=headers
+            )
+            assert product_type.status_code == 201
+            dependent_url = "/api/v1/catalogue/admin/products"
+            dependent = await ac.post(dependent_url, json={
+                "upc": uuid.uuid4().hex, "title": "Test product",
+                "type": product_type.json()["id"], "category": category_id
+            }, headers=headers)
+            message = "This category has products. Delete or move them before deleting it."
+        assert dependent.status_code == 201
+        response = await ac.delete(f"{url}/{category_id}", headers=headers)
+        assert response.status_code == 409
+        assert response.json() == {"detail": message}
+        assert (await ac.get(f"/api/v1/catalogue/categories/{category_id}")).status_code == 200
+        assert (await ac.delete(f"{dependent_url}/{dependent.json()['id']}", headers=headers)).status_code == 204
+        assert (await ac.delete(f"{url}/{category_id}", headers=headers)).status_code == 204
+        assert (await ac.delete(f"{url}/{category_id}", headers=headers)).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_category_delete_handles_integrity_error(monkeypatch) -> None:
+    from unittest.mock import AsyncMock
+    from sqlalchemy.exc import IntegrityError
+    from sqlmodel.ext.asyncio.session import AsyncSession
+
+    headers = {"Authorization": "Bearer dev-mock-token"}
+    url = "/api/v1/catalogue/admin/categories"
+    async with AsyncClient(transport=ASGITransport(app=catalogue_app), base_url="http://test") as ac:
+        category = await ac.post(url, json={"name": "Concurrent reference"}, headers=headers)
+        assert category.status_code == 201
+        rollback = AsyncMock()
+        with monkeypatch.context() as patch:
+            patch.setattr(AsyncSession, "commit", AsyncMock(
+                side_effect=IntegrityError("DELETE", {}, Exception("private database error"))
+            ))
+            patch.setattr(AsyncSession, "rollback", rollback)
+            response = await ac.delete(f"{url}/{category.json()['id']}", headers=headers)
+        assert response.status_code == 409
+        assert response.json() == {"detail": (
+            "This category is referenced by other data and cannot be deleted. Remove or move its references first."
+        )}
+        assert "private database error" not in response.text
+        rollback.assert_awaited_once()
+        assert (await ac.get(f"/api/v1/catalogue/categories/{category.json()['id']}")).status_code == 200
+
+
+
+@pytest.mark.asyncio
 async def test_category_front_and_admin_crud() -> None:
     """
     Verifies Category Admin CRUD and Front listing/hierarchy tree.
