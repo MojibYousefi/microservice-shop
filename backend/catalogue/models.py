@@ -1,6 +1,6 @@
-from typing import Optional, List
+from typing import Annotated, Optional, List
 from sqlmodel import SQLModel, Field, Relationship
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StringConstraints
 
 
 # ==========================================
@@ -71,7 +71,8 @@ class CategoryBase(BaseModel):
 
 
 class CategoryCreate(CategoryBase):
-    pass
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+    parent: Optional[int] = Field(default=None, gt=0)
 
 
 class CategoryUpdate(BaseModel):
@@ -95,7 +96,8 @@ class BrandBase(BaseModel):
 
 
 class BrandCreate(BrandBase):
-    pass
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+    parent: Optional[int] = Field(default=None, gt=0)
 
 
 class BrandUpdate(BaseModel):

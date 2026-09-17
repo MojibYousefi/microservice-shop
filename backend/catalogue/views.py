@@ -2,6 +2,7 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import select, delete
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from backend.config.database import get_async_session
 from backend.gateway.security import get_current_admin_user_payload
@@ -268,12 +269,27 @@ class CategoryAdminView:
             admin_user: Dict[str, Any] = Depends(get_current_admin_user_payload),
             db: AsyncSession = Depends(get_async_session)
         ) -> Category:
+            if category_in.parent is not None:
+                parent = await db.get(Category, category_in.parent)
+                if parent is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail="Parent category not found."
+                    )
+
             category = Category(
                 name=category_in.name,
                 parent=category_in.parent
             )
             db.add(category)
-            await db.commit()
+            try:
+                await db.commit()
+            except IntegrityError:
+                await db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Category could not be created. Check the parent category and submitted data."
+                ) from None
             await db.refresh(category)
             return category
 
@@ -340,12 +356,27 @@ class BrandAdminView:
             admin_user: Dict[str, Any] = Depends(get_current_admin_user_payload),
             db: AsyncSession = Depends(get_async_session)
         ) -> Brand:
+            if brand_in.parent is not None:
+                parent = await db.get(Brand, brand_in.parent)
+                if parent is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail="Parent brand not found."
+                    )
+
             brand = Brand(
                 name=brand_in.name,
                 parent=brand_in.parent
             )
             db.add(brand)
-            await db.commit()
+            try:
+                await db.commit()
+            except IntegrityError:
+                await db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Brand could not be created. Check the parent brand and submitted data."
+                ) from None
             await db.refresh(brand)
             return brand
 
