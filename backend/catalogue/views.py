@@ -250,6 +250,18 @@ class CategoryAdminView:
     def register_routes(cls) -> APIRouter:
         router = cls.router
 
+        @router.get("", response_model=List[CategoryRead])
+        async def list_categories(
+            parent_id: Optional[int] = Query(None, description="Filter by parent category ID"),
+            admin_user: Dict[str, Any] = Depends(get_current_admin_user_payload),
+            db: AsyncSession = Depends(get_async_session)
+        ) -> List[Category]:
+            stmt = select(Category)
+            if parent_id is not None:
+                stmt = stmt.where(Category.parent == parent_id)
+            res = await db.exec(stmt)
+            return list(res.all())
+
         @router.post("", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
         async def create_category(
             category_in: CategoryCreate,
@@ -312,6 +324,15 @@ class BrandAdminView:
     @classmethod
     def register_routes(cls) -> APIRouter:
         router = cls.router
+
+        @router.get("", response_model=List[BrandRead])
+        async def list_brands(
+            admin_user: Dict[str, Any] = Depends(get_current_admin_user_payload),
+            db: AsyncSession = Depends(get_async_session)
+        ) -> List[Brand]:
+            stmt = select(Brand)
+            res = await db.exec(stmt)
+            return list(res.all())
 
         @router.post("", response_model=BrandRead, status_code=status.HTTP_201_CREATED)
         async def create_brand(
