@@ -1,5 +1,6 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { Routes, Route } from 'react-router-dom'
+import "@fontsource-variable/vazirmatn/wght.css";
 
 import "./App.css"
 import Header from './component/header/header'
@@ -10,16 +11,35 @@ import ProductDetail from './component/productDetail/productDetail'
 import Navbar from './component/header/navbar/navbar'
 
 
-export default class App extends Component {
-  render() {
-    return (
-      <> 
-        <Routes>
-          <Route path="/" element={<> <Header /> <ParrentProduct /> <AboutUs /> </>} />
-          <Route path='/Product/:id' element={<><Navbar /> <ProductDetail /></>} />
-        </Routes>
-        <Footer></Footer>
-      </>
-    )
-  }
+export default function App() {
+  return (
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <Header />
+              <ParrentProduct />
+              <section id="about-us">
+                <AboutUs />
+              </section>
+            </>
+          }
+        />
+
+        <Route
+          path="/product/:id"
+          element={
+            <>
+              <Navbar />
+              <ProductDetail />
+            </>
+          }
+        />
+      </Routes>
+
+      <Footer />
+    </>
+  )
 }

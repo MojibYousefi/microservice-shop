@@ -1,48 +1,74 @@
-import React, { Component } from 'react'
+import React from 'react'
 import './productCart.css'
+import { useNavigate } from 'react-router-dom'
 
-export default class ProductCart extends Component {
+export default function ProductCart(props) {
 
-    render() {
-        return (
-            <div className='ProductCart'>
+    const navigate = useNavigate()
 
-                {/* produuct cart image */}
-                <div className='product-image'>
-                    <img src={this.props.ProductImage} alt="" />
-                </div>
-
-
-
-                {/* product cart name title */}
-                <h3 className='perfum-title'>
-                    {this.props.perfumName}
-                </h3>
-                {/* perfum discription */}
-                <p className='perfum-discription'>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Reiciendis, quia?
-                </p>
-
-                <div className='product-text'>
-
-                    {/* old price */}
-                    {this.props.priceforBSP && (
-                        <p className='BSPprice'>{this.props.priceforBSP}</p>
-                    )}
-
-                    {/* new price */}
-                    {this.props.priceAfteroff && (
-                        <div className='offerPrice'>
-                            <p>{this.props.priceAfteroff}</p>
-                            <del className='old-price'>
-                                {this.props.price}
-                            </del>
-                        </div>
-                    )}
-                    <button>افزودن به سبد خرید</button>
-
-                </div>
-            </div>
-        ) 
+    const goingProductDetail = () => {
+        navigate(`/product/${props.id}`)
     }
+
+    return (
+        <div
+            className='ProductCart'
+            onClick={goingProductDetail}
+        >
+
+            {/* product cart image */}
+            <div className='product-image'>
+                <img
+                    src={props.ProductImage}
+                    alt={props.perfumName}
+                />
+            </div>
+
+
+            {/* product cart name title */}
+            <h3 className='perfum-title'>
+                {props.perfumName}
+            </h3>
+
+
+            {/* perfume description */}
+            <p className='perfum-discription'>
+                Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+                Reiciendis, quia?
+            </p>
+
+
+            <div className='product-text'>
+
+                {/* old price */}
+                {props.priceforBSP && (
+                    <p className='BSPprice'>
+                        {props.priceforBSP}
+                    </p>
+                )}
+
+
+                {/* new price */}
+                {props.priceAfteroff && (
+                    <div className='offerPrice'>
+
+                        <p>
+                            {props.priceAfteroff}
+                        </p>
+
+                        <del className='old-price'>
+                            {props.price}
+                        </del>
+
+                    </div>
+                )}
+
+                <button>
+                    افزودن به سبد خرید
+                </button>
+
+            </div>
+
+        </div>
+    )
 }
