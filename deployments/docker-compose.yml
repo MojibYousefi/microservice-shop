@@ -44,7 +44,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Internal Auth Microservice - No host port exposure
+  # Auth Microservice - ports exposed for development (docs/direct access from host)
   auth-service:
     build:
       context: ..
@@ -56,6 +56,8 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production}
+    ports:
+      - "8001:8001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,7 +66,7 @@ services:
     networks:
       - microshop-net
 
-  # Internal Catalogue Microservice - No host port exposure
+  # Catalogue Microservice - ports exposed for development (docs/direct access from host)
   catalogue-service:
     build:
       context: ..
@@ -76,6 +78,8 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://micro_user:micro_pass@postgres:5432/microshop_db}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-in-production}
+    ports:
+      - "8002:8002"
     depends_on:
       postgres:
         condition: service_healthy
