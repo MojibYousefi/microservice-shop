@@ -11,6 +11,7 @@ import ProductDetail from './component/productDetail/productDetail'
 import Navbar from './component/header/navbar/navbar'
 
 
+
 export default function App() {
   return (
     <>
