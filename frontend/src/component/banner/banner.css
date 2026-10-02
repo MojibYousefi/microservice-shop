@@ -1,0 +1,11 @@
+.banner-picture {
+  display: flex;
+  max-width: 1250px;
+  margin: 70px auto 50px auto;  
+}
+.banner-picture img {
+    width: 1250px;
+    height: 450px;
+    border-radius: 10px;
+    border: 1px solid var(--text);
+}

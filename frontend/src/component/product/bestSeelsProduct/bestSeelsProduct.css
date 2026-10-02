@@ -26,6 +26,24 @@
     transparent
   );
 }
+.best-seal-product .swiper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+
+  border-radius: 15px;
+
+    background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.45),
+    transparent
+  );
+}
 
 .best-seal-product .swiper-slide {
   display: flex;
