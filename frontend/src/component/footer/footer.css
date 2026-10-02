@@ -5,7 +5,7 @@
   position: relative;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding-bottom: 30px;
 }
 .footer::after {

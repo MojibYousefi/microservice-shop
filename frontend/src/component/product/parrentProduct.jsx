@@ -1,14 +1,12 @@
-import React, { Component } from 'react'
+import React from 'react'
 import OfferProduct from './offerProduct/offerProduct'
 import BestSeelsProduct from "./bestSeelsProduct/bestSeelsProduct"
 
-export default class ParrentProduct extends Component {
-  render() {
+export default function ParrentProduct() {
     return (
-      <div>
-        <BestSeelsProduct></BestSeelsProduct>
-        <OfferProduct></OfferProduct>
-      </div>
+        <div>
+            <BestSeelsProduct />
+            <OfferProduct />
+        </div>
     )
-  }
 }

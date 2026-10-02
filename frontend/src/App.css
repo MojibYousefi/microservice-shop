@@ -6,6 +6,7 @@ body {
     #5e0006 45%,
     #420004 100%
   );
+  font-family: "Vazirmatn Variable", sans-serif;
 }
 @media (max-width: 900px) {
   body {

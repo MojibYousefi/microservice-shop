@@ -1,89 +1,115 @@
-import React, { Component, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import "./navbar.css"
+import { NavLink } from 'react-router-dom'
 
-export default class Navbar extends Component {
-    constructor(props) {
-        super(props);
+export default function Navbar() {
 
-        this.state = {
-            isMobile: window.innerWidth <= 900
-        };
-    }
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 900)
 
-    componentDidMount() {
-        window.addEventListener("resize", this.handleResize);
-    }
+    useEffect(() => {
 
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.handleResize);
-    }
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 900)
+        }
 
-    handleResize = () => {
-        this.setState({
-            isMobile: window.innerWidth <= 900
-        });
-    };
+        window.addEventListener("resize", handleResize)
 
+        return () => {
+            window.removeEventListener("resize", handleResize)
+        }
 
-    render() {
-        return (
-            <>
-                {this.state.isMobile ? (
-                    <div className='mobile-navbar'>
-                        <div className='mobile-navbar-2'>
-                            <div className="mobile-navbar-item">
-                                <a href="">جستجو</a>
-                            </div>
-                            <div className="mobile-navbar-item">
-                                <a href="">کلکسیون</a>
-                            </div>
-                            <div className="mobile-navbar-item">
-                                <a href="">خانه</a>
-                            </div>
-                            <div className="mobile-navbar-item">
-                                <a href="">حساب کاربری</a>
-                            </div>
-                            <div className="mobile-navbar-item">
-                                <a href="">سبد خرید</a>
-                            </div>
-                        </div>
-                    </div>) : (
-                    // desktop navbar
-                    <div className="navbar-container">
+    }, [])
 
-                        <div className="navbar-actions">
-                            <button className="start-btn">
-                                شروع کنید
-                            </button>
+    return (
+        <>
+            {isMobile ? (
+                <div className='mobile-navbar'>
+                    <div className='mobile-navbar-2'>
 
-                            <a href="#" className="signin">
-                                Sign in
-                            </a>
-
+                        <div className="mobile-navbar-item">
+                            <a href="">جستجو</a>
                         </div>
 
-                        <div className="navbar-menu">
-                            <a href="#">تماس با ما</a>
-                            <a href="#">درباره ما</a>
-                            <a href="#">هدیه</a>
-                            <a href="#">کلکسیون عطرها</a>
+                        <div className="mobile-navbar-item">
+                            <a href="">کلکسیون</a>
                         </div>
 
+                        <div className="mobile-navbar-item">
+                            <a href="">خانه</a>
+                        </div>
 
-                        <div className="navbar-logo">
-                            <div className="logo-icon">
-                                ✽
-                            </div>
+                        <div className="mobile-navbar-item">
+                            <a href="">حساب کاربری</a>
+                        </div>
 
-                            <div className="logo-text">
-                                <span>Aura</span>
-                                <span>Étoile</span>
-                            </div>
+                        <div className="mobile-navbar-item">
+                            <a href="">سبد خرید</a>
                         </div>
 
                     </div>
-                )}
-            </>
-        )
-    }
+                </div>
+
+            ) : (
+
+                // desktop navbar
+                <div className="navbar-container">
+
+                    <div className="navbar-actions">
+
+                        <button className="start-btn">
+                            شروع کنید
+                        </button>
+
+                        <a href="#" className="signin">
+                            Sign in
+                        </a>
+
+                    </div>
+
+
+                    <div className="navbar-menu">
+
+                        <a href='#' className='nav-link'>
+                            تماس با ما
+                        </a>
+
+                        <a href='/#about-us' className='nav-link'>
+                            درباره ما
+                        </a>
+
+                        <a href='#' className='nav-link'>
+                            هدیه
+                        </a>
+
+                        <NavLink
+                            to="/product"
+                            className={({ isActive }) =>
+                                isActive
+                                    ? "nav-link active"
+                                    : "nav-link"
+                            }
+                        >
+                            کلکسیون عطر ها
+                        </NavLink>
+
+                    </div>
+
+
+                    <div className="navbar-logo">
+
+                        <div className="logo-icon">
+                            ✽
+                        </div>
+
+                        <div className="logo-text">
+                            <span>Aura</span>
+                            <span>Étoile</span>
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+        </>
+    )
 }

@@ -1,20 +1,19 @@
 .ProductCart {
   width: 238px;
 
-  background-color: #2B0003;
+  background-color: #2b0003;
 
   border-radius: 20px;
   overflow: hidden;
 
   display: flex;
   flex-direction: column;
-  
 
   direction: rtl;
   flex-shrink: 0;
 
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
-  transition: .3s ease;
+  transition: 0.3s ease;
 }
 
 /* IMAGE */
@@ -66,9 +65,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
-
-  
 
   padding: 0 16px 16px;
 }
@@ -119,20 +115,20 @@
 
 .product-text button {
   border: none;
-  border-radius: 15px;
+  border-radius: 12px;
 
   padding: 12px 19px;
-
   background-color: var(--primary);
   color: var(--background);
-
-  font-size: 11px;
+  
+  font-size: 10px;
   font-weight: 600;
-
+  font-family: "Vazirmatn Variable", sans-serif;
+  
   white-space: nowrap;
-
+  
   cursor: pointer;
-
+  
   transition: 0.25s ease;
 }
 
@@ -146,8 +142,7 @@
   transform: translateY(-2px);
 }
 
-
-@media (max-width : 900px) {
+@media (max-width: 900px) {
   .ProductCart {
     width: 100%;
     height: auto;
