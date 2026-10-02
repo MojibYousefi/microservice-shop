@@ -201,10 +201,35 @@
   margin: 0;
 }
 
+.moreDetail-related-title {
+  width: 1250px;
+  margin: 30px auto 0;
+}
+.head-title {
+  text-align: right;
+  color: var(--text);
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: rtl;
+}
+.head-title::after {
+  content: "";
+  height: 1px;
+  width: 1050px;
+
+  background-color: var(--text);
+  flex-shrink: 0;
+}
+.moreDetail-related-title p {
+  color: var(--primary);
+  text-align: right;
+}
 
 .moreDetail-related-section {
   width: 1250px;
-  margin: 100px auto 0;
+  margin: 60px auto 0;
 
   display: flex;
   flex-direction: row-reverse;

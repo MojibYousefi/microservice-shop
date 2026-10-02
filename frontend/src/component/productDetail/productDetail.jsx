@@ -8,9 +8,18 @@ import { Autoplay } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import 'swiper/css'
 
+import { useParams } from 'react-router-dom'
+
+
 export default function ProductDetail() {
 
-  const [products, setProducts] = useState([
+  const { id } = useParams()
+
+  console.log(id);
+  
+
+
+  const products = [
     {
       id: 1,
       name: "dior svaage",
@@ -26,61 +35,105 @@ export default function ProductDetail() {
         productimage,
       ],
 
-      selectedImage: productimage,
+      volume: "100",
+      category: "مردانه"
+    },
+
+    {
+      id: 2,
+      name: "creed aventus",
+      brand: "creed",
+      price: "6,000,000",
+      discount: "10",
+      finalPrice: "5,400,000",
+      descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
+
+      Images: [
+        productimage,
+        productimage,
+        productimage,
+      ],
+
+      volume: "100",
+      category: "مردانه"
+    },
+
+    {
+      id: 3,
+      name: "blue chanel",
+      brand: "chanel",
+      price: "3,650,000",
+      discount: "20",
+      finalPrice: "2,920,000",
+      descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
+
+      Images: [
+        productimage,
+        productimage,
+        productimage,
+      ],
+
+      volume: "100",
+      category: "مردانه"
+    },
+
+    {
+      id: 4,
+      name: "floris",
+      brand: "floris",
+      price: "8,200,000",
+      discount: "20",
+      finalPrice: "6,500,000",
+      descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
+
+      Images: [
+        productimage,
+        productimage,
+        productimage,
+      ],
+
+      volume: "100",
+      category: "مردانه"
+    },
+
+    {
+      id: 5,
+      name: "almas",
+      brand: "almas",
+      price: "7,000,000",
+      discount: "20",
+      finalPrice: "4,000,000",
+      descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
+
+      Images: [
+        productimage,
+        productimage,
+        productimage,
+      ],
 
       volume: "100",
       category: "مردانه"
     }
-  ])
+  ]
 
-  const [relatedProduct, setRelatedProduct] = useState([
-    {
-      id: 1,
-      perfumName: "svage elexir",
-      price: "4,500,000",
-      ProductImage: productimage,
-      priceAfteroff: "4,000,000"
-    },
-    {
-      id: 2,
-      perfumName: "creed aventus",
-      price: "6,000,000",
-      ProductImage: productimage,
-      priceAfteroff: "5,400,000"
-    },
-    {
-      id: 3,
-      perfumName: "blue chanel",
-      price: "3,650,000",
-      ProductImage: productimage,
-      priceAfteroff: "800,000"
-    },
-    {
-      id: 4,
-      perfumName: "floris",
-      price: "8,200,000",
-      ProductImage: productimage,
-      priceAfteroff: "6,500,000"
-    },
-    {
-      id: 5,
-      perfumName: "almas",
-      price: "7,000,000",
-      ProductImage: productimage,
-      priceAfteroff: "4,000,000"
-    },
-  ])
 
-  const [perfumeQuantity, setPerfumeQuantity] = useState(0)
+  const product = products.find(
+    product => product.id === Number(id)
+  )
+
+
+  // تغییر 4:
+  // selectedImage دیگر داخل خود product نیست
+  const [selectedImage, setSelectedImage] = useState(
+    product?.Images[0]
+  )
+
+
+  const [perfumeQuantity, setPerfumeQuantity] = useState(1)
 
 
   const onclickHandler = (image) => {
-    setProducts(prevProducts => [
-      {
-        ...prevProducts[0],
-        selectedImage: image
-      }
-    ])
+    setSelectedImage(image)
   }
 
 
@@ -93,152 +146,233 @@ export default function ProductDetail() {
     setPerfumeQuantity(prevQuantity =>
       prevQuantity > 1
         ? prevQuantity - 1
-        : 0
+        : 1
     )
   }
 
 
-  const product = products[0]
+  // اگر id محصول وجود نداشت
+  if (!product) {
+    return <h2>محصول پیدا نشد</h2>
+  }
 
 
   return (
     <>
       <div className='product-detail'>
+
         <div className='first-sectiom'>
+
           <div className='product-galery'>
+
             <div className='product-main-image'>
               <img
-                src={product.selectedImage}
-                alt="product"
+                src={selectedImage}
+                alt={product.name}
               />
             </div>
+
+
             <div className='product-thumbnails'>
+
               {product.Images.map((image, index) => (
                 <div
                   className='product-thumbnail'
                   key={index}
                   onClick={() => onclickHandler(image)}
                 >
-                  <img src={image} alt="product" />
+                  <img
+                    src={image}
+                    alt={product.name}
+                  />
                 </div>
               ))}
+
             </div>
+
           </div>
+
         </div>
+
+
         <div className='product-content'>
+
           <h2 className='perfume-name'>
             {product.name}
           </h2>
+
           <p className='perfume-brand'>
             {`(${product.brand})`}
           </p>
+
           <p className='perfume-desc'>
             {product.descriotion}
           </p>
+
           <div className='price-section'>
+
             <p className='perfume-price'>
               {product.price}
             </p>
+
             <p className='perfume-final-price'>
               {product.finalPrice}
             </p>
+
           </div>
+
+
           <div className='buttons-section'>
+
             <button className='addToCart-btn'>
               افزودن به سبد خرید
             </button>
+
             <div>
-              <button className='plusPerfumeCount' onClick={plusPerfumeQuantity}>
+
+              <button
+                className='plusPerfumeCount'
+                onClick={plusPerfumeQuantity}
+              >
                 +
               </button>
+
               <p>{perfumeQuantity}</p>
-              <button className='minusPerfumeCount' onClick={minusPerfumeQuantity}>
+
+              <button
+                className='minusPerfumeCount'
+                onClick={minusPerfumeQuantity}
+              >
                 -
               </button>
+
             </div>
+
           </div>
+
         </div>
 
-
-        {/* feature section */}
       </div>
+
+
+      {/* Features */}
+
       <div className='Features'>
+
         <div className='Feature-item'>
           <p className='big-p'>پشتیبانی 24/7</p>
           <p className='smal-p'>پاسخگویی سریع</p>
         </div>
+
         <div className='Feature-item'>
           <p className='big-p'>ضمانت اصالت کالا</p>
           <p className='smal-p'>با ضمانت نامه</p>
         </div>
+
         <div className='Feature-item'>
           <p className='big-p'>ارسال سریع</p>
           <p className='smal-p'>در سراسر کشور</p>
         </div>
+
         <div className='Feature-item'>
           <p className='big-p'>بازگشت کالا</p>
           <p className='smal-p'>تا 7 روز</p>
         </div>
+
       </div>
 
-
+      <div className='moreDetail-related-title'>
+        <h2 className='head-title'>محصولات مرتبط</h2>
+        <p>عطر هایی با توجه به سلیقه شما</p>
+      </div>
       <div className='moreDetail-related-section'>
+
+
         {/* more detail */}
+
         <div className='moreDetail'>
+
           <h4 className='moreDetail-title'>
             جزئیات بیشتر
           </h4>
+
           <div className='moreDetail-item'>
+
             <div className='details'>
               <p>{product.brand}</p>
               <p>برند</p>
             </div>
+
             <div className='details'>
               <p>{product.category}</p>
               <p>جنسیت</p>
             </div>
+
             <div className='details'>
               <p>{product.volume} میلی لیتر</p>
               <p>حجم</p>
             </div>
+
           </div>
+
         </div>
+
+
         {/* related product */}
+
         <div className='relatedProduct'>
 
           <Swiper
             modules={[Autoplay]}
-            slidesPerView={3  }
+            slidesPerView={3}
             spaceBetween={20}
+
             breakpoints={{
               0: {
                 slidesPerView: 2,
                 spaceBetween: 10,
               },
+
               900: {
                 slidesPerView: 2,
                 spaceBetween: 20
               },
+
               1200: {
-                slidesPerView: 5,
+                slidesPerView: 3,
                 spaceBetween: 20
               }
             }}
+
             autoplay={{
               delay: 2000,
               pauseOnMouseEnter: true,
               disableOnInteraction: false
             }}
           >
-            {relatedProduct.map((product) =>
-              <SwiperSlide key={product.id} >
-                <ProductCart {...product} />
+
+            {products.map((product) => (
+
+              <SwiperSlide key={product.id}>
+
+                <ProductCart
+                  id={product.id}
+                  perfumName={product.name}
+                  ProductImage={product.Images[0]}
+                  price={product.price}
+                  priceAfteroff={product.finalPrice}
+                />
+
               </SwiperSlide>
-            )}
+
+            ))}
+
           </Swiper>
+
         </div>
 
       </div>
+
     </>
   )
 }

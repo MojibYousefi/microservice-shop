@@ -14,6 +14,7 @@ import Navbar from './component/header/navbar/navbar'
 export default function App() {
   return (
     <>
+      {/* main page */}
       <Routes>
         <Route
           path="/"
@@ -27,7 +28,7 @@ export default function App() {
             </>
           }
         />
-
+        {/* product detail page */}
         <Route
           path="/product/:id"
           element={

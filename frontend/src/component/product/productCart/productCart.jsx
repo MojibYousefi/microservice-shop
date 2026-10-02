@@ -24,19 +24,16 @@ export default function ProductCart(props) {
                 />
             </div>
 
-
             {/* product cart name title */}
             <h3 className='perfum-title'>
                 {props.perfumName}
             </h3>
-
 
             {/* perfume description */}
             <p className='perfum-discription'>
                 Lorem ipsum dolor, sit amet consectetur adipisicing elit.
                 Reiciendis, quia?
             </p>
-
 
             <div className='product-text'>
 
@@ -46,7 +43,6 @@ export default function ProductCart(props) {
                         {props.priceforBSP}
                     </p>
                 )}
-
 
                 {/* new price */}
                 {props.priceAfteroff && (
