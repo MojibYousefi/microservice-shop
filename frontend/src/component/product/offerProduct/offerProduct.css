@@ -39,14 +39,15 @@
 .offer-product .swiper {
   width: 100%;
   position: relative;
+  padding: 20px 0;
 }
 .offer-product .swiper::after {
   content: "";
   position: absolute;
-  top: 0;
+  top: 20px;
+  bottom: 20px;
   right: 0;
   width: 60px;
-  height: 100%;
   z-index: 10;
   pointer-events: none;
   border-radius: 15px;
@@ -56,10 +57,10 @@
 .offer-product .swiper::before {
   content: "";
   position: absolute;
-  top: 0;
+  top: 20px;
+  bottom: 20px;
   left: 0;
   width: 60px;
-  height: 100%;
   z-index: 10;
   pointer-events: none;
 

@@ -1,6 +1,11 @@
 .aboutUs-container {
     width: 1250px;
     margin: 100px auto;
+
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    gap: 30px;
 }
 .aboutUs-container span {
     text-align: right;
@@ -38,6 +43,11 @@
     line-height: 160%;
     text-align: right;
     color: var(--primary);
+}
+
+.aboutUs-IMG img{ 
+    width: 650px; 
+    border-radius: 10px;
 }
 
 @media (max-width: 900px) {
