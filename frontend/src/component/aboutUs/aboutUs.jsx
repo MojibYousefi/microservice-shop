@@ -1,12 +1,16 @@
 import React from 'react'
 import './aboutUs.css'
+import aboutUsPicture from '../../assets/picture/header.png'
 
 export default function AboutUs() {
     return (
         <div className='aboutUs-container'>
-            <span>داستان اصالت ما</span>
+            <div className='aboutUs-IMG'>
+                <img src={aboutUsPicture} alt="" />
+            </div>
 
             <div className='aboutUs-content'>
+                <span>داستان اصالت ما</span>
                 <h2>درباره انور اسنس</h2>
 
                 <p>
@@ -21,6 +25,7 @@ export default function AboutUs() {
                     پاسخی درخور کمال‌گرایی ارائه دهیم.
                 </p>
             </div>
+
         </div>
     )
 }
