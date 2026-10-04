@@ -16,6 +16,12 @@
   transition: 0.3s ease;
 }
 
+.ProductCart:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.20);
+  cursor: pointer;
+}
+
 /* IMAGE */
 
 .product-image {
@@ -120,15 +126,15 @@
   padding: 12px 19px;
   background-color: var(--primary);
   color: var(--background);
-  
+
   font-size: 10px;
   font-weight: 600;
   font-family: "Vazirmatn Variable", sans-serif;
-  
+
   white-space: nowrap;
-  
+
   cursor: pointer;
-  
+
   transition: 0.25s ease;
 }
 

@@ -1,20 +1,21 @@
 .best-seal-product {
   width: 1250px;
-  margin: 0 auto; 
+  margin: 0 auto;
 }
 
 .best-seal-product .swiper {
   width: 100%;
   position: relative;
+  padding: 20px 0;
 }
 
 .best-seal-product .swiper::after {
   content: "";
   position: absolute;
-  top: 0;
+  top: 20px;
+  bottom: 20px;
   right: 0;
   width: 60px;
-  height: 100%;
   z-index: 10;
   pointer-events: none;
 
@@ -29,10 +30,9 @@
 .best-seal-product .swiper::before {
   content: "";
   position: absolute;
-  top: 0;
+  top: 20px;
   left: 0;
   width: 60px;
-  height: 100%;
   z-index: 10;
   pointer-events: none;
 
