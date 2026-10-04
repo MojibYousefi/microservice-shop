@@ -1,53 +1,76 @@
 .product-detail {
   width: 1250px;
-  display: flex;
 
-  margin: 150px auto 60px auto;
-}
+  display: grid;
 
-.first-sectiom {
-  width: 100%;
+  grid-template-columns: 300px 1fr 500px;
+
+  gap: 50px;
+
+  margin: 160px auto 60px auto;
+
+  align-items: start;
 }
 
 .product-galery {
-  width: 100%;
-
   display: flex;
-  align-items: flex-start;
-  gap: 25px;
+
+  flex-direction: column-reverse;
+
+  align-items: stretch;
+
+  gap: 20px;
 }
 
 .product-main-image {
-  width: 60%;
+  width: 100%;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 }
 
 .product-main-image img {
   width: 100%;
-  height: 100%;
+
+  height: 500px;
 
   object-fit: contain;
 }
 
 .product-thumbnails {
+  width: 100%;
+
   display: flex;
-  flex-direction: column;
+
+  flex-direction: row;
+
+  justify-content: flex-start;
+
   gap: 15px;
 }
 
 .product-thumbnail {
   width: 90px;
+
   height: 90px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   cursor: pointer;
 
   border: 1px solid transparent;
+
+  border-radius: 8px;
+
+  overflow: hidden;
+
   transition: 0.2s ease;
 }
 
@@ -57,240 +80,423 @@
 
 .product-thumbnail img {
   width: 100%;
+
   height: 100%;
 
   object-fit: contain;
 }
 
 .product-content {
-  width: 45%;
+  width: 100%;
+
   direction: rtl;
+
   display: flex;
+
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
+
   gap: 18px;
 }
+
 .perfume-name {
   margin: 0;
+
   color: var(--primary);
-  font-size: 38px;
+
+  font-size: 34px;
+
   font-weight: 700;
+
   line-height: 1.3;
 }
+
 .perfume-brand {
-  margin: -10px 0 0;
+  margin: 0;
+
   color: var(--secondary);
+
   font-size: 18px;
 }
+
 .perfume-desc {
-  margin: 10px 0;
-  max-width: 600px;
+  margin: 0;
+
   color: var(--text);
+
   font-size: 17px;
+
   line-height: 1.9;
 }
+
 .price-section {
   display: flex;
+
   align-items: center;
+
   gap: 20px;
-  margin-top: 10px;
+
+  margin-top: 5px;
 }
+
 .perfume-price {
   margin: 0;
+
   color: var(--secondary);
-  font-size: 18px;
+
+  font-size: 16px;
+
   text-decoration: line-through;
 }
+
 .perfume-final-price {
   margin: 0;
+
   color: var(--accent);
+
   font-size: 26px;
+
   font-weight: 700;
 }
+
+/* =========================
+   buttons
+========================= */
+
 .buttons-section {
-  width: 100%;
   display: flex;
+
   align-items: center;
+
+  justify-content: flex-end;
+
   gap: 20px;
-  margin-top: 15px;
+
+  margin-top: 40px;
 }
+
+/* دکمه افزودن به سبد */
+
 .addToCart-btn {
+  position: relative;
+
   height: 52px;
-  padding: 0 35px;
+
+  width: 205px;
+
+  padding: 0;
+
   border: 1px solid var(--accent);
-  border-radius: 2px;
+
+  border-radius: 8px;
 
   background-color: var(--accent);
+
   color: var(--background);
 
   font-family: inherit;
+
   font-size: 16px;
+
   font-weight: 600;
 
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-.addToCart-btn:hover {
-  background-color: transparent;
-  color: var(--accent);
-}
-.buttons-section > div {
-  height: 52px;
+
   display: flex;
+
   align-items: center;
 
-  border: 1px solid var(--secondary);
+  justify-content: center;
+
+  overflow: hidden;
+
+  transition:
+    width 0.45s ease,
+    border-radius 0.45s ease,
+    background-color 0.3s ease;
 }
+
+.addToCart-btn:hover {
+  background-color: transparent;
+
+  color: var(--accent);
+}
+
+/* متن داخل دکمه */
+
+.add-text {
+  white-space: nowrap;
+
+  opacity: 1;
+
+  transform: scale(1);
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.3s ease;
+}
+
+/* تیک */
+
+.check-icon {
+  position: absolute;
+
+  font-size: 24px;
+
+  font-weight: 700;
+
+  opacity: 0;
+
+  transform: scale(0.4);
+
+  transition:
+    opacity 0.25s ease 0.2s,
+    transform 0.3s ease 0.2s;
+}
+
+/* =========================
+   حالت بعد از افزودن
+========================= */
+
+.buttons-section.added .addToCart-btn {
+  width: 52px;
+
+  border-radius: 8px;
+  
+  background: transparent;
+  
+  color: var(--primary);
+
+  border: 1px solid var(--primary);
+}
+
+.buttons-section.added .add-text {
+  opacity: 0;
+
+  transform: scale(0.5);
+}
+
+.buttons-section.added .check-icon {
+  opacity: 1;
+
+  transform: scale(1);
+}
+
+/* =========================
+   quantity
+========================= */
+
+.quantity-control {
+  height: 52px;
+
+  display: flex;
+
+  align-items: center;
+
+  border-radius: 8px;
+
+  overflow: hidden;
+
+  opacity: 0;
+
+  transform: translateX(15px);
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s ease;
+
+  border: 1px solid var(--primary);
+}
+
+/* نمایش quantity بعد از اضافه شدن */
+
+.buttons-section.added .quantity-control {
+  opacity: 1;
+
+  transform: translateX(0);
+
+  pointer-events: auto;
+}
+
+/* دکمه های + و - */
+
 .plusPerfumeCount,
 .minusPerfumeCount {
-  width: 45px;
+  width: 42px;
+
   height: 100%;
 
   border: none;
+
   background-color: transparent;
+
   color: var(--primary);
 
   font-size: 20px;
+
   cursor: pointer;
 
   transition: 0.2s ease;
 }
+
 .plusPerfumeCount:hover,
 .minusPerfumeCount:hover {
   color: var(--accent);
 }
-.buttons-section > div p {
-  min-width: 35px;
+
+/* عدد تعداد */
+
+.quantity-control p {
+  min-width: 40px;
+
   margin: 0;
 
   text-align: center;
+
   color: var(--primary);
+
   font-size: 16px;
-}
-
-.Features {
-  width: 1250px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-
-  padding: 10px 0;
-  position: relative;
-}
-.Feature-item {
-  position: relative;
-  padding: 20px 50px;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  gap: 10px;
-  border: 1.5px solid var(--text);
-  border-radius: 12px;
-}
-
-.big-p {
-  font-weight: 500;
-  font-size: 20px;
-  color: var(--primary);
-  margin: 0;
-}
-.smal-p {
-  font-size: 16px;
-  color: var(--secondary);
-  margin: 0;
 }
 
 .moreDetail-related-title {
   width: 1250px;
+
   margin: 30px auto 0;
 }
+
 .head-title {
   text-align: right;
+
   color: var(--text);
 
   display: flex;
+
   align-items: center;
+
   gap: 12px;
+
   direction: rtl;
 }
+
 .head-title::after {
   content: "";
+
   height: 1px;
+
   width: 1050px;
 
   background-color: var(--text);
+
   flex-shrink: 0;
 }
+
 .moreDetail-related-title p {
   color: var(--primary);
+
   text-align: right;
 }
 
 .moreDetail-related-section {
   width: 1250px;
+
   margin: 60px auto 0;
 
   display: flex;
+
   flex-direction: row-reverse;
+
   align-items: flex-start;
+
   gap: 30px;
 }
 
-
-
 /* more detail */
+
 .moreDetail {
-  width: 300px;
-  flex-shrink: 0;
+  width: 100%;
 
   display: flex;
+
   flex-direction: column;
 
-  border: 1px solid var(--primary);
   border-radius: 12px;
+
   padding: 20px;
 
   margin: 0;
+
   box-sizing: border-box;
 }
+
 .moreDetail-title {
-  text-align: right;
+  margin: 0 0 20px;
+
+  text-align: center;
+
   font-size: 19px;
+
   font-weight: 700;
+
   color: var(--primary);
 }
 
 .moreDetail-item {
   display: flex;
+
   flex-direction: column;
+
+  gap: 10px;
 }
 
 .details {
   display: flex;
+
   flex-direction: row;
+
   justify-content: space-between;
-  border-bottom: 1px solid var(--primary);
+
+  align-items: center;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  backdrop-filter: blur(20px);
+
+  -webkit-backdrop-filter: blur(20px);
+
+  border-radius: 25px;
+
+  padding: 12px 15px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .details p {
+  margin: 0;
+
   color: var(--secondary);
+
   font-size: 16px;
+
   font-weight: 500;
 }
 
-/* relaited product */
+/* related product */
+
 .relatedProduct {
   flex: 1;
-  min-width: 0;   
+
+  min-width: 0;
 }
 
 .relatedProduct .swiper {
   width: 100%;
+
   position: relative;
 }
 
 .relatedProduct .swiper-slide {
   display: flex;
+
   justify-content: center;
 }

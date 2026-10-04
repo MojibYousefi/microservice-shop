@@ -14,9 +14,10 @@ import { useParams } from 'react-router-dom'
 export default function ProductDetail() {
 
   const { id } = useParams()
+  const [isAddedToCart, setIsAddedToCart] = useState(false);
 
   console.log(id);
-  
+
 
 
   const products = [
@@ -153,140 +154,13 @@ export default function ProductDetail() {
 
   // اگر id محصول وجود نداشت
   if (!product) {
-    return <h2>محصول پیدا نشد</h2>
+    return <h2>این محصول کیری پیدا نشد</h2>
   }
 
 
   return (
     <>
       <div className='product-detail'>
-
-        <div className='first-sectiom'>
-
-          <div className='product-galery'>
-
-            <div className='product-main-image'>
-              <img
-                src={selectedImage}
-                alt={product.name}
-              />
-            </div>
-
-
-            <div className='product-thumbnails'>
-
-              {product.Images.map((image, index) => (
-                <div
-                  className='product-thumbnail'
-                  key={index}
-                  onClick={() => onclickHandler(image)}
-                >
-                  <img
-                    src={image}
-                    alt={product.name}
-                  />
-                </div>
-              ))}
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div className='product-content'>
-
-          <h2 className='perfume-name'>
-            {product.name}
-          </h2>
-
-          <p className='perfume-brand'>
-            {`(${product.brand})`}
-          </p>
-
-          <p className='perfume-desc'>
-            {product.descriotion}
-          </p>
-
-          <div className='price-section'>
-
-            <p className='perfume-price'>
-              {product.price}
-            </p>
-
-            <p className='perfume-final-price'>
-              {product.finalPrice}
-            </p>
-
-          </div>
-
-
-          <div className='buttons-section'>
-
-            <button className='addToCart-btn'>
-              افزودن به سبد خرید
-            </button>
-
-            <div>
-
-              <button
-                className='plusPerfumeCount'
-                onClick={plusPerfumeQuantity}
-              >
-                +
-              </button>
-
-              <p>{perfumeQuantity}</p>
-
-              <button
-                className='minusPerfumeCount'
-                onClick={minusPerfumeQuantity}
-              >
-                -
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      {/* Features */}
-
-      <div className='Features'>
-
-        <div className='Feature-item'>
-          <p className='big-p'>پشتیبانی 24/7</p>
-          <p className='smal-p'>پاسخگویی سریع</p>
-        </div>
-
-        <div className='Feature-item'>
-          <p className='big-p'>ضمانت اصالت کالا</p>
-          <p className='smal-p'>با ضمانت نامه</p>
-        </div>
-
-        <div className='Feature-item'>
-          <p className='big-p'>ارسال سریع</p>
-          <p className='smal-p'>در سراسر کشور</p>
-        </div>
-
-        <div className='Feature-item'>
-          <p className='big-p'>بازگشت کالا</p>
-          <p className='smal-p'>تا 7 روز</p>
-        </div>
-
-      </div>
-
-      <div className='moreDetail-related-title'>
-        <h2 className='head-title'>محصولات مرتبط</h2>
-        <p>عطر هایی با توجه به سلیقه شما</p>
-      </div>
-      <div className='moreDetail-related-section'>
-
 
         {/* more detail */}
 
@@ -314,8 +188,141 @@ export default function ProductDetail() {
             </div>
 
           </div>
+          <div className={`buttons-section ${isAddedToCart ? 'added' : ''}`}>
+
+            <div className="quantity-control">
+
+              <button
+                className="minusPerfumeCount"
+                onClick={minusPerfumeQuantity}
+              >
+                -
+              </button>
+
+              <p>{perfumeQuantity}</p>
+
+              <button
+                className="plusPerfumeCount"
+                onClick={plusPerfumeQuantity}
+              >
+                +
+              </button>
+
+            </div>
+
+            <button
+              className="addToCart-btn"
+              onClick={() => setIsAddedToCart(true)}
+            >
+              <span className="add-text">
+                افزودن به سبد خرید
+              </span>
+
+              <span className="check-icon">
+                ✓
+              </span>
+            </button>
+
+          </div>
 
         </div>
+
+        <div className='product-content'>
+
+          <h2 className='perfume-name'>
+            {product.name}
+          </h2>
+
+          <p className='perfume-brand'>
+            {`(${product.brand})`}
+          </p>
+
+          <p className='perfume-desc'>
+            {product.descriotion}
+          </p>
+
+          <div className='price-section'>
+
+            <p className='perfume-price'>
+              {product.price}
+            </p>
+
+            <p className='perfume-final-price'>
+              {product.finalPrice}
+            </p>
+
+          </div>
+
+        </div>
+
+
+
+        <div className='product-galery'>
+
+
+
+          <div className='product-thumbnails'>
+
+            {product.Images.map((image, index) => (
+              <div
+                className='product-thumbnail'
+                key={index}
+                onClick={() => onclickHandler(image)}
+              >
+                <img
+                  src={image}
+                  alt={product.name}
+                />
+              </div>
+            ))}
+
+          </div>
+          <div className='product-main-image'>
+            <img
+              src={selectedImage}
+              alt={product.name}
+            />
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      {/* Features */}
+
+      {/* <div className='Features'>
+
+        <div className='Feature-item'>
+          <p className='big-p'>پشتیبانی 24/7</p>
+          <p className='smal-p'>پاسخگویی سریع</p>
+        </div>
+
+        <div className='Feature-item'>
+          <p className='big-p'>ضمانت اصالت کالا</p>
+          <p className='smal-p'>با ضمانت نامه</p>
+        </div>
+
+        <div className='Feature-item'>
+          <p className='big-p'>ارسال سریع</p>
+          <p className='smal-p'>در سراسر کشور</p>
+        </div>
+
+        <div className='Feature-item'>
+          <p className='big-p'>بازگشت کالا</p>
+          <p className='smal-p'>تا 7 روز</p>
+        </div>
+
+      </div> */}
+
+      <div className='moreDetail-related-title'>
+        <h2 className='head-title'>محصولات مرتبط</h2>
+        <p>عطر هایی با توجه به سلیقه شما</p>
+      </div>
+      <div className='moreDetail-related-section'>
+
+
 
 
         {/* related product */}
