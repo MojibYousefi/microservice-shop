@@ -79,16 +79,15 @@ export default function Navbar() {
 
                     {/* Search Navbar */}
                     <div
-                        className={`navbar-after-click ${isSearching ? "show" : ""
-                            }`}
+                        className={`navbar-after-click ${isSearching ? "show" : ""}`}
                     >
-
                         <IoSearch className="mobile-navbar-icon" />
 
-                        <span>
-                            ... جستجو کنید
-                        </span>
-
+                        <input
+                            type="text"
+                            placeholder=" جستجو کنید ..."
+                            className="input-search"
+                        />
                     </div>
 
                 </div>
@@ -99,18 +98,7 @@ export default function Navbar() {
                 <div className="navbar-container">
 
                     <div className="navbar-actions">
-
-                        <button className="start-btn">
-                            شروع کنید
-                        </button>
-
-                        <a
-                            href="#"
-                            className="signin"
-                        >
-                            Sign in
-                        </a>
-
+                        <NavLink className="login-btn"> ورود | عضویت</NavLink>
                     </div>
 
 
