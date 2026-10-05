@@ -4,15 +4,10 @@
 
 .navbar {
   position: static;
-
   margin-top: 25px;
-
   width: 100%;
-
   z-index: 1000;
-
   padding: 0 40px;
-
   box-sizing: border-box;
 }
 
@@ -23,22 +18,18 @@
 .navbar-container {
   width: 100%;
   max-width: 800px;
-
   height: 64px;
-
   margin: 0 auto;
   margin-top: 10px !important;
-
   padding: 0 20px;
 
   position: fixed;
   top: 0;
   left: 50%;
-  width: 100%;
+
   transform: translateX(-50%);
 
   z-index: 1000;
-
   box-sizing: border-box;
 
   display: flex;
@@ -62,11 +53,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   gap: 8px;
 
   color: var(--text);
-
   min-width: 160px;
 }
 
@@ -79,11 +68,9 @@
   justify-content: center;
 
   border: 1px solid var(--text);
-
   border-radius: 50%;
 
   font-size: 22px;
-
   color: var(--text);
 }
 
@@ -92,10 +79,7 @@
   flex-direction: column;
 
   line-height: 1;
-
-
   font-size: 13px;
-
   letter-spacing: 0.5px;
 }
 
@@ -105,9 +89,7 @@
 
 .logo-text span:last-child {
   font-size: 11px;
-
   margin-top: 3px;
-
   opacity: 0.9;
 }
 
@@ -118,7 +100,6 @@
 .navbar-menu {
   display: flex;
   align-items: center;
-
   gap: 28px;
 }
 
@@ -126,18 +107,20 @@
   position: relative;
 
   color: var(--text);
-
   text-decoration: none;
 
   font-size: 18px;
 
   transition: color 0.3s ease;
 }
+
 .nav-link.active {
   color: var(--accent);
 }
+
 .nav-link.active::after {
   content: "";
+
   position: absolute;
   right: 0;
   bottom: -8px;
@@ -152,7 +135,6 @@
   content: "";
 
   position: absolute;
-
   right: 0;
   bottom: -7px;
 
@@ -182,7 +164,6 @@
   gap: 10px;
 
   min-width: 160px;
-
   justify-content: flex-end;
 }
 
@@ -195,7 +176,6 @@
   text-decoration: none;
 
   font-family: Arial, sans-serif;
-
   font-size: 14px;
 
   transition: 0.3s;
@@ -214,15 +194,12 @@
   border: none;
 
   padding: 11px 20px;
-
   border-radius: 12px;
 
   background: var(--primary);
-
   color: var(--background);
 
   font-family: inherit;
-
   font-size: 13px;
 
   cursor: pointer;
@@ -231,7 +208,8 @@
 
   transition:
     transform 0.3s ease,
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .start-btn:hover {
@@ -241,30 +219,169 @@
 .start-btn:active {
   transform: translateY(0);
 }
+
 /* ==========================================
-MOBILE NAVBAR
-==============================================*/
+   MOBILE NAVBAR
+========================================== */
 
 .mobile-navbar {
-  width: 100%;
+  width: 90%;
+
   position: fixed;
-  bottom: 0;
-  left: 0;
+  bottom: 10px;
+  left: 50%;
+
+  transform: translateX(-50%);
 
   z-index: 1000;
-  background-color: var(--background);
+
+  background: rgba(255, 255, 255, 0.05);
+
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  /* ارتفاع ثابت برای جلوگیری از تغییر اندازه */
+  min-height: 60px;
 }
 
+/* ==========================================
+   MOBILE NAVBAR STATES
+========================================== */
+
+.mobile-navbar-2,
+.navbar-after-click {
+  width: 100%;
+  box-sizing: border-box;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
+}
+
+/* ==========================================
+   MAIN MOBILE NAVBAR
+========================================== */
+
 .mobile-navbar-2 {
-  width: 90%;
-  padding: 10px 0;
-  margin: 0 auto;
+  padding: 10px 5%;
 
   display: flex;
   justify-content: space-between;
+  align-items: center;
+
+  opacity: 1;
+
+  /* حالت اصلی */
+  transform: translateX(0);
+}
+
+/* ==========================================
+   MAIN NAVBAR → EXIT LEFT
+========================================== */
+
+.mobile-navbar-2.hide {
+  opacity: 0;
+
+  /* خروج از سمت چپ */
+  transform: translateX(-100%);
+
+  pointer-events: none;
+}
+
+/* ==========================================
+   SEARCH NAVBAR
+========================================== */
+
+.navbar-after-click {
+  min-height: 60px;
+
+  padding: 15px 30px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  opacity: 0;
+
+  /* Search ابتدا خارج از سمت راست */
+  transform: translateX(100%);
+
+  pointer-events: none;
+}
+
+/* ==========================================
+   SEARCH NAVBAR → ENTER FROM RIGHT
+========================================== */
+
+.navbar-after-click.show {
+  opacity: 1;
+
+  /* ورود به مرکز */
+  transform: translateX(0);
+
+  pointer-events: auto;
+}
+
+/* ==========================================
+   MOBILE NAVBAR ITEM
+========================================== */
+
+.mobile-navbar-item {
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+
+  color: var(--text);
+
+  font-size: 15px;
+  font-weight: 500;
+
+  line-height: 1;
+
+  text-decoration: none;
 }
 
 .mobile-navbar-item a {
   text-decoration: none;
+
+  color: var(--primary);
+
+  white-space: nowrap;
+
+  line-height: 1.2;
+}
+
+/* ==========================================
+   MOBILE ICON
+========================================== */
+
+.mobile-navbar-icon {
+  color: var(--text);
+
+  width: 22px;
+  height: 22px;
+
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   SEARCH TEXT
+========================================== */
+
+.navbar-after-click span {
   color: var(--primary);
 }
