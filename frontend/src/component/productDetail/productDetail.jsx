@@ -10,6 +10,11 @@ import 'swiper/css'
 
 import { useParams } from 'react-router-dom'
 
+import { BiSupport } from "react-icons/bi";
+import { MdOutlineVerifiedUser } from "react-icons/md";
+import { LiaShippingFastSolid } from "react-icons/lia";
+import { PiKeyReturnLight } from "react-icons/pi";
+
 
 export default function ProductDetail() {
 
@@ -253,6 +258,29 @@ export default function ProductDetail() {
 
           </div>
 
+          <div className='Features'>
+
+            <div className='Feature-item'>
+              <p className='smal-p'>پاسخگویی سریع</p>
+              <BiSupport className='mobile-navbar-icon' />
+            </div>
+
+            <div className='Feature-item'>
+              <p className='big-p'>ضمانت اصالت کالا</p>
+              <MdOutlineVerifiedUser className='mobile-navbar-icon' />
+            </div>
+
+            <div className='Feature-item'>
+              <p className='big-p'>ارسال به سراسر کشور</p>
+              <LiaShippingFastSolid className='mobile-navbar-icon' />
+              </div>
+
+            <div className='Feature-item'>
+              <p className='big-p'>بازگشت کالا</p>
+              <PiKeyReturnLight className='mobile-navbar-icon' />
+            </div>
+          </div>
+
         </div>
 
 
@@ -289,32 +317,6 @@ export default function ProductDetail() {
 
       </div>
 
-
-      {/* Features */}
-
-      {/* <div className='Features'>
-
-        <div className='Feature-item'>
-          <p className='big-p'>پشتیبانی 24/7</p>
-          <p className='smal-p'>پاسخگویی سریع</p>
-        </div>
-
-        <div className='Feature-item'>
-          <p className='big-p'>ضمانت اصالت کالا</p>
-          <p className='smal-p'>با ضمانت نامه</p>
-        </div>
-
-        <div className='Feature-item'>
-          <p className='big-p'>ارسال سریع</p>
-          <p className='smal-p'>در سراسر کشور</p>
-        </div>
-
-        <div className='Feature-item'>
-          <p className='big-p'>بازگشت کالا</p>
-          <p className='smal-p'>تا 7 روز</p>
-        </div>
-
-      </div> */}
 
       <div className='moreDetail-related-title'>
         <h2 className='head-title'>محصولات مرتبط</h2>

@@ -95,7 +95,7 @@
 
   flex-direction: column;
 
-  gap: 18px;
+  gap: 30px;
 }
 
 .perfume-name {
@@ -157,6 +157,38 @@
 
   font-weight: 700;
 }
+
+/* ======================= */
+  /* Features */
+/* ========================*/
+.Features {
+  /* border: 1px solid var(--secondary); */
+  border-radius: 12px;
+  padding: 10px 0;
+}
+.Feature-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  line-height: 2;
+}
+.Feature-item:not(:last-child) {  
+  border-bottom: 1px solid var(--secondary);
+}
+.Feature-item p {
+  font-size: 20px;
+  margin: 7px 0;
+  color: var(--primary); 
+}
+.mobile-navbar-icon {
+  color: var(--primary);
+
+  width: 25px;
+  height: 25px;
+
+  flex-shrink: 0;
+}
+
 
 /* =========================
    buttons
