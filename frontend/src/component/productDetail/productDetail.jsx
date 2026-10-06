@@ -346,7 +346,7 @@ export default function ProductDetail() {
               },
 
               1200: {
-                slidesPerView: 3,
+                slidesPerView: 4,
                 spaceBetween: 20
               }
             }}
