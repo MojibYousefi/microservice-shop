@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './productDetail.css'
 import ProductCart from '../product/productCart/productCart'
 
@@ -19,11 +19,9 @@ import { PiKeyReturnLight } from "react-icons/pi";
 export default function ProductDetail() {
 
   const { id } = useParams()
-  const [isAddedToCart, setIsAddedToCart] = useState(false);
 
-  console.log(id);
-
-
+  const [isAddedToCart, setIsAddedToCart] = useState(false)
+  const [perfumeQuantity, setPerfumeQuantity] = useState(1)
 
   const products = [
     {
@@ -34,13 +32,11 @@ export default function ProductDetail() {
       discount: "20",
       finalPrice: "3,600,000",
       descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
-
       Images: [
         productimage,
         productimage,
         productimage,
       ],
-
       volume: "100",
       category: "مردانه"
     },
@@ -53,13 +49,11 @@ export default function ProductDetail() {
       discount: "10",
       finalPrice: "5,400,000",
       descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
-
       Images: [
         productimage,
         productimage,
         productimage,
       ],
-
       volume: "100",
       category: "مردانه"
     },
@@ -72,13 +66,11 @@ export default function ProductDetail() {
       discount: "20",
       finalPrice: "2,920,000",
       descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
-
       Images: [
         productimage,
         productimage,
         productimage,
       ],
-
       volume: "100",
       category: "مردانه"
     },
@@ -91,13 +83,11 @@ export default function ProductDetail() {
       discount: "20",
       finalPrice: "6,500,000",
       descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
-
       Images: [
         productimage,
         productimage,
         productimage,
       ],
-
       volume: "100",
       category: "مردانه"
     },
@@ -110,13 +100,11 @@ export default function ProductDetail() {
       discount: "20",
       finalPrice: "4,000,000",
       descriotion: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Vero, in!",
-
       Images: [
         productimage,
         productimage,
         productimage,
       ],
-
       volume: "100",
       category: "مردانه"
     }
@@ -128,14 +116,16 @@ export default function ProductDetail() {
   )
 
 
-  // تغییر 4:
-  // selectedImage دیگر داخل خود product نیست
   const [selectedImage, setSelectedImage] = useState(
     product?.Images[0]
   )
 
 
-  const [perfumeQuantity, setPerfumeQuantity] = useState(1)
+  useEffect(() => {
+    setSelectedImage(product?.Images[0])
+    setIsAddedToCart(false)
+    setPerfumeQuantity(1)
+  }, [id])
 
 
   const onclickHandler = (image) => {
@@ -144,61 +134,70 @@ export default function ProductDetail() {
 
 
   const plusPerfumeQuantity = () => {
-    setPerfumeQuantity(prevQuantity => prevQuantity + 1)
-  }
-
-
-  const minusPerfumeQuantity = () => {
-    setPerfumeQuantity(prevQuantity =>
-      prevQuantity > 1
-        ? prevQuantity - 1
-        : 1
+    setPerfumeQuantity(
+      prevQuantity => prevQuantity + 1
     )
   }
 
 
-  // اگر id محصول وجود نداشت
+  const minusPerfumeQuantity = () => {
+    setPerfumeQuantity(
+      prevQuantity =>
+        prevQuantity > 1
+          ? prevQuantity - 1
+          : 1
+    )
+  }
+
+
   if (!product) {
-    return <h2>این محصول کیری پیدا نشد</h2>
+    return <h2>این محصول پیدا نشد</h2>
   }
 
 
   return (
     <>
-      <div className='product-detail'>
 
-        {/* more detail */}
+      <div className="product-detail">
 
-        <div className='moreDetail'>
+        <div className="product-purchase">
 
-          <h4 className='moreDetail-title'>
-            جزئیات بیشتر
-          </h4>
+          <div className="more-detail">
 
-          <div className='moreDetail-item'>
+            <h4 className="more-detail__title">
+              جزئیات بیشتر
+            </h4>
 
-            <div className='details'>
-              <p>{product.brand}</p>
-              <p>برند</p>
-            </div>
+            <div className="more-detail__items">
 
-            <div className='details'>
-              <p>{product.category}</p>
-              <p>جنسیت</p>
-            </div>
+              <div className="product-detail-row">
+                <p>{product.brand}</p>
+                <p>برند</p>
+              </div>
 
-            <div className='details'>
-              <p>{product.volume} میلی لیتر</p>
-              <p>حجم</p>
+              <div className="product-detail-row">
+                <p>{product.category}</p>
+                <p>جنسیت</p>
+              </div>
+
+              <div className="product-detail-row">
+                <p>{product.volume} میلی لیتر</p>
+                <p>حجم</p>
+              </div>
+
             </div>
 
           </div>
-          <div className={`buttons-section ${isAddedToCart ? 'added' : ''}`}>
+
+
+          <div
+            className={`buttons-section ${isAddedToCart ? "added" : ""}`}
+          >
 
             <div className="quantity-control">
 
               <button
-                className="minusPerfumeCount"
+                className="quantity-control__minus"
                 onClick={minusPerfumeQuantity}
               >
                 -
@@ -207,7 +206,7 @@ export default function ProductDetail() {
               <p>{perfumeQuantity}</p>
 
               <button
-                className="plusPerfumeCount"
+                className="quantity-control__plus"
                 onClick={plusPerfumeQuantity}
               >
                 +
@@ -215,15 +214,16 @@ export default function ProductDetail() {
 
             </div>
 
+
             <button
-              className="addToCart-btn"
+              className="add-to-cart-btn"
               onClick={() => setIsAddedToCart(true)}
             >
-              <span className="add-text">
+              <span className="add-to-cart-btn__text">
                 افزودن به سبد خرید
               </span>
 
-              <span className="check-icon">
+              <span className="add-to-cart-btn__check">
                 ✓
               </span>
             </button>
@@ -232,151 +232,166 @@ export default function ProductDetail() {
 
         </div>
 
-        <div className='product-content'>
 
-          <h2 className='perfume-name'>
+        <div className="product-content">
+
+          <h2 className="product-content__name">
             {product.name}
           </h2>
 
-          <p className='perfume-brand'>
-            {`(${product.brand})`}
+          <p className="product-content__brand">
+            ({product.brand})
           </p>
 
-          <p className='perfume-desc'>
+          <p className="product-content__description">
             {product.descriotion}
           </p>
 
-          <div className='price-section'>
+          <div className="product-content__price">
 
-            <p className='perfume-price'>
+            <p className="product-content__old-price">
               {product.price}
             </p>
 
-            <p className='perfume-final-price'>
+            <p className="product-content__final-price">
               {product.finalPrice}
             </p>
 
           </div>
 
-          <div className='Features'>
 
-            <div className='Feature-item'>
-              <p className='smal-p'>پاسخگویی سریع</p>
-              <BiSupport className='mobile-navbar-icon' />
+          <div className="product-features">
+
+            <div className="product-feature">
+              <p>پاسخگویی سریع</p>
+              <BiSupport className="product-feature__icon" />
             </div>
 
-            <div className='Feature-item'>
-              <p className='big-p'>ضمانت اصالت کالا</p>
-              <MdOutlineVerifiedUser className='mobile-navbar-icon' />
+            <div className="product-feature">
+              <p>ضمانت اصالت کالا</p>
+              <MdOutlineVerifiedUser className="product-feature__icon" />
             </div>
 
-            <div className='Feature-item'>
-              <p className='big-p'>ارسال به سراسر کشور</p>
-              <LiaShippingFastSolid className='mobile-navbar-icon' />
-              </div>
-
-            <div className='Feature-item'>
-              <p className='big-p'>بازگشت کالا</p>
-              <PiKeyReturnLight className='mobile-navbar-icon' />
+            <div className="product-feature">
+              <p>ارسال به سراسر کشور</p>
+              <LiaShippingFastSolid className="product-feature__icon" />
             </div>
+
+            <div className="product-feature">
+              <p>بازگشت کالا</p>
+              <PiKeyReturnLight className="product-feature__icon" />
+            </div>
+
           </div>
 
         </div>
 
 
+        <div className="product-gallery">
 
-        <div className='product-galery'>
-
-
-
-          <div className='product-thumbnails'>
+          <div className="product-gallery__thumbnails">
 
             {product.Images.map((image, index) => (
+
               <div
-                className='product-thumbnail'
+                className={`product-gallery__thumbnail ${selectedImage === image ? "active" : ""}`}
                 key={index}
                 onClick={() => onclickHandler(image)}
               >
+
                 <img
                   src={image}
                   alt={product.name}
                 />
+
               </div>
+
             ))}
 
           </div>
-          <div className='product-main-image'>
+
+
+          <div className="product-gallery__main">
+
             <img
               src={selectedImage}
               alt={product.name}
             />
-          </div>
 
+          </div>
 
         </div>
 
       </div>
 
 
-      <div className='moreDetail-related-title'>
-        <h2 className='head-title'>محصولات مرتبط</h2>
-        <p>عطر هایی با توجه به سلیقه شما</p>
-      </div>
-      <div className='moreDetail-related-section'>
+      <div className="related-products">
+
+        <div className="related-products__title">
+
+          <h2 className="related-products__heading">
+            محصولات مرتبط
+          </h2>
+
+          <p>
+            عطر هایی با توجه به سلیقه شما
+          </p>
+
+        </div>
 
 
+        <div className="related-products__section">
 
+          <div className="related-products__slider">
 
-        {/* related product */}
+            <Swiper
+              modules={[Autoplay]}
+              slidesPerView={3}
+              spaceBetween={20}
 
-        <div className='relatedProduct'>
+              breakpoints={{
+                0: {
+                  slidesPerView: 2,
+                  spaceBetween: 10,
+                },
 
-          <Swiper
-            modules={[Autoplay]}
-            slidesPerView={3}
-            spaceBetween={20}
+                900: {
+                  slidesPerView: 2,
+                  spaceBetween: 20
+                },
 
-            breakpoints={{
-              0: {
-                slidesPerView: 2,
-                spaceBetween: 10,
-              },
+                1200: {
+                  slidesPerView: 4,
+                  spaceBetween: 20
+                }
+              }}
 
-              900: {
-                slidesPerView: 2,
-                spaceBetween: 20
-              },
+              autoplay={{
+                delay: 2000,
+                pauseOnMouseEnter: true,
+                disableOnInteraction: false
+              }}
+            >
 
-              1200: {
-                slidesPerView: 4,
-                spaceBetween: 20
-              }
-            }}
+              {products.map((product) => (
 
-            autoplay={{
-              delay: 2000,
-              pauseOnMouseEnter: true,
-              disableOnInteraction: false
-            }}
-          >
+                <SwiperSlide key={product.id}>
 
-            {products.map((product) => (
+                  <ProductCart
+                    id={product.id}
+                    perfumName={product.name}
+                    ProductImage={product.Images[0]}
+                    price={product.price}
+                    priceAfteroff={product.finalPrice}
+                  />
 
-              <SwiperSlide key={product.id}>
+                </SwiperSlide>
 
-                <ProductCart
-                  id={product.id}
-                  perfumName={product.name}
-                  ProductImage={product.Images[0]}
-                  price={product.price}
-                  priceAfteroff={product.finalPrice}
-                />
+              ))}
 
-              </SwiperSlide>
+            </Swiper>
 
-            ))}
-
-          </Swiper>
+          </div>
 
         </div>
 
